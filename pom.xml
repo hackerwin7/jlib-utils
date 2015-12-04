@@ -34,6 +34,11 @@
             <artifactId>hadoop-client</artifactId>
             <version>2.2.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.jd.bdp</groupId>
+            <artifactId>jdq</artifactId>
+            <version>1.4-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,3 +1,5 @@
+package com.github.hackerwin7.jlib.utils.jdk.commons.test;
+
 /**
  * Created by fff on 10/28/15.
  */

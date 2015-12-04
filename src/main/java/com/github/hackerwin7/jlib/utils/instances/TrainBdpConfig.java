@@ -3,17 +3,13 @@ package com.github.hackerwin7.jlib.utils.instances;
 import com.github.hackerwin7.jlib.utils.drivers.url.URLClient;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * get source host in train.bdp.com......
@@ -27,6 +23,9 @@ public class TrainBdpConfig {
     /*constants*/
     public static final String FILE_NAME = "job.list";
     public static final String BDP_URL = "http://train.bdp.jd.com/api/ztc/job/getJobConfig.ajax?jobId=";
+
+    /*data*/
+    public static Set<String> topicSum = new HashSet<String>();
 
     /**
      * get the ip config info
@@ -57,6 +56,11 @@ public class TrainBdpConfig {
             logger.info(job + " ---------> " + jdata);
             Thread.sleep(500);
         }
+
+        logger.info("topic sum -> ");
+        for(String topic : topicSum) {
+            logger.info(topic);
+        }
     }
 
     private static String toParserJobId(String jobId) throws Throwable {
@@ -76,19 +80,29 @@ public class TrainBdpConfig {
         } else {
             ip = "NOT FOUND key = source_host";
         }
+        String ttopic = null;
+        if(jtdata.containsKey("tracker_log_topic")) {
+            ttopic = jtdata.getString("tracker_log_topic");
+            //sum topic
+            topicSum.add(ttopic);
+        } else {
+            ttopic = "NOT FOUND key = tracker_log_topic";
+        }
         JSONObject jpdata = JSONObject.fromObject(URLClient.getFromUrl(BDP_URL + pid)).getJSONObject("data");
         String topicStr = null;
         if(jpdata.containsKey("db_tab_meta")) {
             JSONArray jparr = jpdata.getJSONArray("db_tab_meta");
             Set<String> topics = new HashSet<String>();
             for(int i = 0; i <= jparr.size() - 1; i++) {
-                topics.add(jparr.getJSONObject(i).getString("topic"));
+                String ptopic = jparr.getJSONObject(i).getString("topic");
+                topics.add(ptopic);
+                topicSum.add(ptopic);
             }
             topicStr = StringUtils.join(topics, ",");
         } else {
             topicStr = "NOT FOUND key = db_tab_meta";
         }
-        return ip + " =====> " + topicStr;
+        return ip + "=====>" + ttopic + " =====> " + topicStr;
     }
 
     private void startGetIp() throws Throwable {

@@ -1,3 +1,5 @@
+package com.github.hackerwin7.jlib.utils.hadoop.test;
+
 import org.apache.hadoop.conf.Configuration;
 
 /**
