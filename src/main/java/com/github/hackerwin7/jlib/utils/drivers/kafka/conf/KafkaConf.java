@@ -38,17 +38,35 @@ public class KafkaConf {
     public static final String HIGH_TOPIC = "high.level.topic";
 
     /*  simple config*/
-
+    public static final String SIMPLE_BROKER_LIST = "simple.brokers";
+    public static final String SIMPLE_PARTITIONS = "simple.partitions";
+    public static final String SIMPLE_OFFSETS = "simple.offsets";
+    public static final String SIMPLE_END_OFFSETS = "simple.end.offsets";
+    public static final String SIMPLE_TOPIC = "simple.topic";
 
     /**
      * default props
      */
     public KafkaConf() {
+        //producer config
         props.put(PRODUCER_BROKER_LIST, "127.0.0.1:9092");
         props.put(PRODUCER_ACKS, "-1");
         props.put(PRODUCER_VALUE_SERIALIZER_CLASS, "kafka.serializer.DefaultEncoder");
         props.put(PRODUCER_KEY_SERIALIZER_CLASS, "kafka.serializer.StringEncoder");
         props.put(PRODUCER_PARTITION_CLASS, "kafka.producer.DefaultPartitioner");
+        //high config
+        props.put(HIGH_ZOOKEEPER_CONN, "127.0.0.1:2181");
+        props.put(HIGH_GROUP_ID, System.currentTimeMillis());
+        props.put(HIGH_ZOOKEEPER_SESSION_TIMEOUT, "400");
+        props.put(HIGH_ZOOKEEPER_SYNC_TIME, "200");
+        props.put(HIGH_AUTO_COMMIT_INTERVAL, "1000");
+        props.put(HIGH_TOPIC, "test");
+        //simple config
+        props.put(SIMPLE_BROKER_LIST, "127.0.0.1:9092");
+        props.put(SIMPLE_PARTITIONS, "0");
+        props.put(SIMPLE_OFFSETS, "0");
+        props.put(SIMPLE_END_OFFSETS, Long.MAX_VALUE);
+        props.put(SIMPLE_TOPIC, "test");
     }
 
     /**
