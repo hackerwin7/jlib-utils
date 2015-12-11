@@ -5,15 +5,16 @@ import com.github.hackerwin7.jlib.utils.drivers.kafka.data.KafkaMsg;
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.common.ErrorMapping;
-import kafka.javaapi.FetchResponse;
-import kafka.javaapi.PartitionMetadata;
+import kafka.javaapi.*;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -38,6 +39,7 @@ public class KafkaSimpleConsumer {
     public static final int CONSUME_BUFFER_SIZE = 64 * 1024;
     public static final int FETCH_SIZE = 1024 * 1024;
     public static final int ERR_COUNT_RECONN = 5;
+    public static final long SLEEPING_TIME = 3000;
 
     /*data*/
     private String topic = null;
@@ -47,7 +49,6 @@ public class KafkaSimpleConsumer {
     private BlockingQueue<KafkaMsg> queue = new LinkedBlockingQueue<>(QUEUE_SIZE);
 
     /*driver*/
-    private Map<Integer, >
     private Map<Integer, SimpleConsumer> consumers = new HashMap<>();// consumer pool, topic partition -> simple consumer
 
     /**
@@ -204,16 +205,90 @@ public class KafkaSimpleConsumer {
                         } else {//put message to offset
                             //header
                             long nextOffset = messageAndOffset.nextOffset();
+                            long currentOffset = curOffset;
                             byte[] val  = null;
-                            //deal
+                            String key = null;
+                            String topicMsg = null;
+                            int partitionMsg = 0;
+                            //deal value
                             ByteBuffer valBuffer = messageAndOffset.message().payload();
                             byte[] valBytes = new byte[valBuffer.limit()];
                             valBuffer.get(valBytes);
                             val = valBytes;
+                            //deal key
+                            if(messageAndOffset.message().hasKey()) {
+                                ByteBuffer keyBuffer = messageAndOffset.message().key();
+                                byte[] keyBytes = new byte[keyBuffer.limit()];
+                                keyBuffer.get(keyBytes);
+                                key = new String(keyBytes);
+                            }
+                            //deal topic
+                            topicMsg = topic;
+                            //deal partition
+                            partitionMsg = partition;
+                            //make kafka message
+                            KafkaMsg msg = KafkaMsg.createBuilder()
+                                    .offset(currentOffset)
+                                    .nextOffset(nextOffset)
+                                    .val(val)
+                                    .key(key)
+                                    .topic(topicMsg)
+                                    .partition(partitionMsg)
+                                    .build();
+                            //put into queue
+                            while (true) {
+                                try {
+                                    queue.put(msg);
+                                    break;
+                                } catch (InterruptedException e) {
+                                    logger.error(e.getMessage(), e);
+                                    try {
+                                        Thread.sleep(SLEEPING_TIME);
+                                    } catch (InterruptedException ee) {
+                                        logger.error(ee.getMessage(), ee);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+
+        /**
+         * find specified topic's leader broker
+         * @return leader
+         */
+        private PartitionMetadata findLeader() {
+            PartitionMetadata metadata = null;
+            loop:
+            for(Map.Entry<String, Integer> brokerPort : brokers.entrySet()) {
+                String seed = brokerPort.getKey();
+                int port = brokerPort.getValue();
+                String clientName = "find_leader" + System.currentTimeMillis();
+                SimpleConsumer consumer = null;
+                try {
+                    consumer = new SimpleConsumer(seed, port, CONSUME_TIME_OUT, CONSUME_BUFFER_SIZE, clientName);
+                    List<String> topics = Collections.singletonList(topic);
+                    TopicMetadataRequest request = new TopicMetadataRequest(topics);
+                    TopicMetadataResponse response = consumer.send(request);
+                    List<TopicMetadata> metadatas = response.topicsMetadata();
+                    for(TopicMetadata item : metadatas) {
+                        for(PartitionMetadata part : item.partitionsMetadata()) {
+                            if(part.partitionId() == partition) {
+                                metadata = part;
+                                break loop;
+                            }
+                        }
+                    }
+                } catch (Throwable e) {
+                    logger.error("error communicating with broker = [" + seed + "] to find leader for topic = [" + topic + "], partition = [" + partition + "]");
+                } finally {
+                    if(consumer != null)
+                        consumer.close();
+                }
+            }
+            return metadata;
         }
     }
 }
