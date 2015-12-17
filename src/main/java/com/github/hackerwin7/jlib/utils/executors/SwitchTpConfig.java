@@ -1,4 +1,4 @@
-package com.github.hackerwin7.jlib.utils.instances;
+package com.github.hackerwin7.jlib.utils.executors;
 
 import com.github.hackerwin7.jlib.utils.drivers.url.URLClient;
 import net.sf.json.JSONArray;
@@ -18,7 +18,6 @@ import org.apache.http.util.EntityUtils;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.
@@ -57,7 +56,7 @@ public class SwitchTpConfig {
             String constr = URLClient.getFromUrl(TrainBdpConfig.BDP_URL + pid);
             JSONObject jconf = JSONObject.fromObject(constr);
             JSONObject jconft = JSONObject.fromObject(constrt);
-            writeConf("tp-" + tid + KEY_FORMAT, switchConf(jconf, jconft).toString());
+            writeConf("tp-" + tid + KEY_FORMAT, switchConf(jconf, jconft).getJSONObject("data").toString());
             getConf("tp-" + tid + KEY_FORMAT);
             ordersNum++;
         }
@@ -74,6 +73,8 @@ public class SwitchTpConfig {
         old.getJSONObject("data").put("target.clientport", "2181");
         old.getJSONObject("data").put("target.hbase.zkroot", "/hbase_paris");
         old.getJSONObject("data").put("family", "d");
+        old.getJSONObject("data").put("rowkey_type", "long");
+
         JSONArray jarr = old.getJSONObject("data").getJSONArray("db_tab_meta");
         for(int i = 0; i <= jarr.size() - 1; i++) {
             JSONObject jdt = jarr.getJSONObject(i);

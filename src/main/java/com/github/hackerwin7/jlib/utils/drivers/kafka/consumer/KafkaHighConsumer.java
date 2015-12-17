@@ -41,7 +41,7 @@ public class KafkaHighConsumer {
     /*topic*/
     private String topic = null;
 
-    /*queue, consumer take queue*/
+    /*queue, consumer consume queue*/
     private BlockingQueue<KafkaMsg> queue = new LinkedBlockingQueue<>(QUEUE_SIZE);
 
     /**

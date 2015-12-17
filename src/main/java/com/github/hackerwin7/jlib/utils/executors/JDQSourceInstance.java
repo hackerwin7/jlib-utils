@@ -1,4 +1,4 @@
-package com.github.hackerwin7.jlib.utils.instances;
+package com.github.hackerwin7.jlib.utils.executors;
 
 import com.jd.bdp.jdq.consumer.JDQSimpleConsumer;
 import com.jd.bdp.jdq.consumer.simple.JDQSimpleMessage;

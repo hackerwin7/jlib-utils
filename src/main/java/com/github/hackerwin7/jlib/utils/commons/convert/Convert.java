@@ -1,9 +1,12 @@
-package com.github.hackerwin7.jlib.utils.utils.convert;
+package com.github.hackerwin7.jlib.utils.commons.convert;
 
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,26 +22,6 @@ public class Convert {
 
     /*logger*/
     private static Logger logger = Logger.getLogger(Convert.class);
-
-    /**
-     * json to map
-     * @param json
-     * @return
-     */
-    public static Map json2MapManual(JSONObject json) {
-        Map map = new HashMap();
-        Iterator keys = json.keys();
-        while (keys.hasNext()) {
-            String key = keys.next().toString();
-            String val = json.get(key).toString();
-            if(val.startsWith("{") && val.endsWith("}")) { // value is jsonObject
-                map.put(key, json2MapManual(JSONObject.fromObject(val)));
-            } else {
-                map.put(key, val);
-            }
-        }
-        return map;
-    }
 
     /**
      * json convert to map using ObjectMapper
@@ -63,5 +46,24 @@ public class Convert {
      */
     public static JSONObject map2Json(Map map) {
         return JSONObject.fromObject(map);
+    }
+
+    /**
+     * file convert to input stream
+     * @param filename
+     * @param prop
+     * @return input stream
+     * @throws Exception
+     */
+    public static InputStream file2in(String filename, String prop) throws Exception {
+        String cnf = System.getProperty(prop, "classpath:" + filename);
+        InputStream in = null;
+        if(cnf.startsWith("classpath:")) {
+            cnf = StringUtils.substringAfter(cnf, "classpath:");
+            in = Convert.class.getClassLoader().getResourceAsStream(cnf);
+        } else {
+            in = new FileInputStream(cnf);
+        }
+        return in;
     }
 }

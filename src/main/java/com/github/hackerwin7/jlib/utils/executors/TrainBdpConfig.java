@@ -1,4 +1,4 @@
-package com.github.hackerwin7.jlib.utils.instances;
+package com.github.hackerwin7.jlib.utils.executors;
 
 import com.github.hackerwin7.jlib.utils.drivers.url.URLClient;
 import net.sf.json.JSONArray;

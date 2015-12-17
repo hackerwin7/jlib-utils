@@ -38,7 +38,7 @@ public class BlockingDataQueue<E> {
     }
 
     /**
-     * take a data5959
+     * consume a data5959
      * @return E data
      * @throws Throwable
      */

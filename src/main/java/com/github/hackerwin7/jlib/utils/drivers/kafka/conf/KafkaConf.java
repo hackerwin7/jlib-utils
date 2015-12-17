@@ -44,10 +44,18 @@ public class KafkaConf {
     public static final String SIMPLE_END_OFFSETS = "simple.end.offsets";
     public static final String SIMPLE_TOPIC = "simple.topic";
 
+    /*  jdq producer config*/
+    public static final String JDQ_ZK_INFO = "jdq.zk.info";
+    public static final String JDQ_IS_SYNC = "jdq.is.sync";
+    public static final String JDQ_COMPRESSION = "jdq.compression";
+    public static final String JDQ_REPLICA_LEVEL = "jdq.replica.level";//all, no, one
+    public static final String JDQ_IS_CONTROL_SPEED = "jdq.is.control.speed";
+
     /**
      * default props
      */
     public KafkaConf() {
+        //default config for kafka config
         //producer config
         props.put(PRODUCER_BROKER_LIST, "127.0.0.1:9092");
         props.put(PRODUCER_ACKS, "-1");
@@ -67,6 +75,12 @@ public class KafkaConf {
         props.put(SIMPLE_OFFSETS, "0");
         props.put(SIMPLE_END_OFFSETS, Long.MAX_VALUE);
         props.put(SIMPLE_TOPIC, "test");
+        //jdq producer
+        props.put(JDQ_ZK_INFO, "127.0.0.1:2181/kafka");
+        props.put(JDQ_IS_SYNC, "true");
+        props.put(JDQ_COMPRESSION, "none");
+        props.put(JDQ_REPLICA_LEVEL, "all");
+        props.put(JDQ_IS_CONTROL_SPEED, "false");
     }
 
     /**
