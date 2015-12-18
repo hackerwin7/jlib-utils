@@ -1,5 +1,8 @@
 package com.github.hackerwin7.jlib.utils.drivers.kafka.data;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by IntelliJ IDEA.
  * User: hackerwin7
@@ -63,5 +66,14 @@ public class KafkaInfo {
 
     public String getTopic() {
         return topic;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("kafka info =>").append("\n");
+        sb.append("---> brokers = " + brokers).append("\n");
+        sb.append("---> zks = " + zks).append("\n");
+        sb.append("---> topic = " + topic);
+        return sb.toString();
     }
 }

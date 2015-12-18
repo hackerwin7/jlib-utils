@@ -106,6 +106,7 @@ public class KafkaSimpleConsumer {
      */
     private void start() {
         for(Map.Entry<Integer, Long> entry : offsets.entrySet()) {
+            //get offset partition info for specific consume thread
             int partition = entry.getKey();
             long offset = entry.getValue();
             long endOffset = endOffsets.get(partition);
@@ -443,7 +444,7 @@ public class KafkaSimpleConsumer {
      * is queue empty
      * @return bool
      */
-    public boolean isEmpty() {
+    public boolean isConsumeEmpty() {
         return queue.isEmpty();
     }
 }

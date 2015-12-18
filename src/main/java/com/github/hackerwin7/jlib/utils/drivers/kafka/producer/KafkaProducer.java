@@ -79,6 +79,11 @@ public class KafkaProducer {
         return new KeyedMessage<String, byte[]>(msg.getTopic(), msg.getKey(), msg.getVal());
     }
 
+    /**
+     * convert to batch keyedmessages
+     * @param msgs
+     * @return
+     */
     public static List<KeyedMessage<String, byte[]>> toKeyedMessage(List<KafkaMsg> msgs) {
         List<KeyedMessage<String, byte[]>> keyedMessages = new ArrayList<>();
         for(KafkaMsg msg : msgs) {

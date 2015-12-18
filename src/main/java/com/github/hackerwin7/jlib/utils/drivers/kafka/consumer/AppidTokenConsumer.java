@@ -146,7 +146,7 @@ public class AppidTokenConsumer {
         logger.info("max offsets => " + seeMap(maxPosPool));
         logger.info("load offsets => " + seeMap(posPool));
         logger.info("after default strategy, reset the load offset......");
-        offsetStrategy();
+        offsetStrategy();//offset default and set strategy
         logger.info("load offsets => " + seeMap(posPool));
         thCon = new Thread(new Runnable() {
             public void run() {
@@ -235,6 +235,9 @@ public class AppidTokenConsumer {
         }
     }
 
+    /**
+     * set begin offset and end offset
+     */
     private void offsetStrategy() {
         for(Map.Entry<Integer, Long> entry : posPool.entrySet()) {
             int partition = entry.getKey();
