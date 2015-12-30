@@ -88,7 +88,7 @@ public class KafkaUtils {
         List<String> partitionsList = zk.getChildren(partitionPath);
         //make partitions
         int partitionNum = partitionsList.size();// 0 ~ size - 1
-        //using partition to build    broker info, consumer interface, offset query
+        //using partition to build    broker info, consumer interface, offset queryData
         Map<Integer, String> partitionBrokers = new HashMap<>();
         Map<Integer, Long> beginOffsets = new HashMap<>();
         Map<Integer, Long> endOffsets = new HashMap<>();

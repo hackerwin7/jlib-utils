@@ -23,7 +23,7 @@ public class KafkaConf {
     public static final String PRODUCER_BROKER_LIST  = "metadata.broker.list";
     public static final String PRODUCER_ACKS = "request.required.acks";
     public static final String PRODUCER_REQUEST_TIMEOUT = "request.timeout.ms";
-    public static final String PRODUCER_TYPE = "producer.type";
+    public static final String PRODUCER_TYPE = "producer.mtype";
     public static final String PRODUCER_VALUE_SERIALIZER_CLASS = "serializer.class";
     public static final String PRODUCER_KEY_SERIALIZER_CLASS = "key.serializer.class";
     public static final String PRODUCER_PARTITION_CLASS = "partitioner.class";
@@ -89,7 +89,7 @@ public class KafkaConf {
      * @param val
      */
     public void setProp(String key, String val) {
-        props.put(key, val);
+        props.setProperty(key, val);
     }
 
     /**
@@ -98,7 +98,7 @@ public class KafkaConf {
      * @return
      */
     public String getProp(String key) {
-        return props.get(key).toString();
+        return props.getProperty(key);
     }
 
     /**

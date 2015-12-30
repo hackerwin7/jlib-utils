@@ -14,6 +14,9 @@ public class URLClient {
     /*driver*/
     private URL url = null;
 
+    /*constants*/
+    public static final int CONN_TIME_OUT = 30 * 1000;
+
     /**
      * construct with url
      * @param urlStr
@@ -30,6 +33,7 @@ public class URLClient {
      */
     public String get() throws Exception {
         URLConnection uc = url.openConnection();
+        uc.setConnectTimeout(CONN_TIME_OUT);
         BufferedReader in = new BufferedReader(new InputStreamReader(uc.getInputStream()));
         String line = null;
         StringBuilder sb = new StringBuilder();
@@ -49,6 +53,7 @@ public class URLClient {
     public static String getFromUrl(String url) throws Exception {
         URL urlOb = new URL(url);
         URLConnection uc = urlOb.openConnection();
+        uc.setConnectTimeout(CONN_TIME_OUT);
         BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()));
         String line = null;
         StringBuilder sb = new StringBuilder();

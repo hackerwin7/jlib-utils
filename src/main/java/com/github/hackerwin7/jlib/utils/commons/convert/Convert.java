@@ -1,5 +1,8 @@
 package com.github.hackerwin7.jlib.utils.commons.convert;
 
+import com.github.hackerwin7.jlib.utils.drivers.hbase.data.HData;
+import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyColumn;
+import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyData;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -16,7 +19,7 @@ import java.util.Map;
  * User: hackerwin7
  * Date: 2015/12/11
  * Time: 10:54 AM
- * Desc: convert type class
+ * Desc: convert mtype class
  */
 public class Convert {
 

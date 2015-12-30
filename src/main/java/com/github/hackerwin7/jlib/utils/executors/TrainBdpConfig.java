@@ -57,10 +57,10 @@ public class TrainBdpConfig {
             Thread.sleep(500);
         }
 
-        logger.info("topic sum -> ");
-        for(String topic : topicSum) {
-            logger.info(topic);
-        }
+//        logger.info("topic sum -> ");
+//        for(String topic : topicSum) {
+//            logger.info(topic);
+//        }
     }
 
     private static String toParserJobId(String jobId) throws Throwable {
@@ -102,7 +102,7 @@ public class TrainBdpConfig {
         } else {
             topicStr = "NOT FOUND key = db_tab_meta";
         }
-        return ip + "=====>" + ttopic + " =====> " + topicStr;
+        return ip + " =====> " + ttopic + " =====> " + topicStr;
     }
 
     private void startGetIp() throws Throwable {
