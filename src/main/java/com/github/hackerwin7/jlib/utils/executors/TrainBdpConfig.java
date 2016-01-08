@@ -80,6 +80,12 @@ public class TrainBdpConfig {
         } else {
             ip = "NOT FOUND key = source_host";
         }
+        String user = null;
+        if(jtdata.containsKey("source_user")) {
+            user = jtdata.getString("source_user");
+        } else {
+            user = "NOT FOUND key = source_user";
+        }
         String ttopic = null;
         if(jtdata.containsKey("tracker_log_topic")) {
             ttopic = jtdata.getString("tracker_log_topic");
@@ -102,7 +108,7 @@ public class TrainBdpConfig {
         } else {
             topicStr = "NOT FOUND key = db_tab_meta";
         }
-        return ip + " =====> " + ttopic + " =====> " + topicStr;
+        return ip + " =====> " + user + " =====> " + ttopic + " =====> " + topicStr;
     }
 
     private void startGetIp() throws Throwable {

@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.executors;
 
+import com.github.hackerwin7.jlib.utils.commons.CommonUtils;
 import com.github.hackerwin7.jlib.utils.drivers.hbase.conf.HBaseConf;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -9,6 +10,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.util.MD5Hash;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,7 +42,9 @@ public class HBaseReadDemo {
         Connection connection = ConnectionFactory.createConnection(configuration);
         Admin admin = connection.getAdmin();
         Table table = connection.getTable(TableName.valueOf(hbTb));
-        Get get = new Get(Bytes.toBytes(rowkey));
+        byte[] md5row = getMd5Row(rowkey);
+        Get get = new Get(md5row);
+        System.out.println(CommonUtils.showBytes(md5row));
         Result rs = table.get(get);
         for (Cell cell : rs.rawCells()) {
             StringBuilder sb = new StringBuilder();
@@ -50,5 +54,11 @@ public class HBaseReadDemo {
                     .append("value = ").append(Bytes.toString(CellUtil.cloneValue(cell)));
             System.out.println(sb.toString());
         }
+    }
+
+    public static byte[] getMd5Row(String rowkey) {
+        int rowInt = Integer.valueOf(rowkey);
+        byte[] rowBytes = Bytes.toBytes(rowInt);
+        return Bytes.toBytes(MD5Hash.getMD5AsHex(rowBytes));
     }
 }

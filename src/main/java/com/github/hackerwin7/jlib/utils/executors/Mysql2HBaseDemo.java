@@ -1,11 +1,6 @@
 package com.github.hackerwin7.jlib.utils.executors;
 
-import com.github.hackerwin7.jlib.utils.drivers.file.FileUtils;
-import com.github.hackerwin7.jlib.utils.drivers.hbase.conf.HBaseConf;
-import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyData;
-import com.github.hackerwin7.jlib.utils.frameworks.magpie.MagpieExecutor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -13,6 +8,7 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.util.MD5Hash;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
@@ -56,6 +52,8 @@ public class Mysql2HBaseDemo {
     public static final long SEND_INTERVAL = 3 * 1000;
     public static final long TIMER_DELAY = 3 * 1000;
     public static final long TIMER_PERIOD = 30 * 1000;
+    public static final String PRIMARY_INPUT_CONN = ",";
+    public static final String PRIMARY_ROWKEY_CONN = ":";
 
     /**
      * construct with string
@@ -139,9 +137,9 @@ public class Mysql2HBaseDemo {
         myConn = DriverManager.getConnection("jdbc:mysql://" + myHost + ":" + myPort + "/" + myDb, myUser, myPassword);
         //build hbase driver
         Configuration configuration = HBaseConfiguration.create();
-        configuration.set(HBaseConf.HBASE_ZK_QUORUM, hbZk);
-        configuration.set(HBaseConf.HBASE_ZK_PORT, String.valueOf(hbPort));
-        configuration.set(HBaseConf.HBASE_ZK_NODE_ROOT, hbRoot);
+        configuration.set("hbase.zookeeper.quorum", hbZk);
+        configuration.set("hbase.zookeeper.property.clientPort", String.valueOf(hbPort));
+        configuration.set("zookeeper.znode.parent", hbRoot);
         hbConn = ConnectionFactory.createConnection(configuration);
         admin = hbConn.getAdmin();
         if(admin == null) {
@@ -186,6 +184,29 @@ public class Mysql2HBaseDemo {
                 return dms;
             }
 
+            private byte[] getRow(ResultSet rs, String fieldName, String type) throws Exception {
+                byte[] origin = null;
+                if (StringUtils.containsIgnoreCase(type, "string")) {
+                    origin = Bytes.toBytes(rs.getString(fieldName));
+                } else if(StringUtils.containsIgnoreCase(type, "long")) {
+                    origin = Bytes.toBytes(rs.getLong(fieldName));
+                } else if (StringUtils.containsIgnoreCase(type, "int")) {
+                    origin = Bytes.toBytes(rs.getInt(fieldName));
+                } else if (StringUtils.containsIgnoreCase(type, "timestamp")) {
+                    origin = Bytes.toBytes(String.valueOf(rs.getTimestamp(fieldName)));
+                } else if(StringUtils.containsIgnoreCase(type, "decimal")) {
+                    origin = Bytes.toBytes(rs.getBigDecimal(fieldName));
+                } else {
+                    throw new Exception("not supported type!!!! , type = " + type);
+                }
+                String hashRow = MD5Hash.getMD5AsHex(origin);
+                return Bytes.toBytes(hashRow);
+            }
+
+            private byte[] getRows(ResultSet rs, String filedNames, Map<String, DescMeta> metaMap) {
+                return null;//to be continued
+            }
+
             @Override
             public void run() {
                 try {
@@ -196,7 +217,8 @@ public class Mysql2HBaseDemo {
                     ResultSet rs = stmt.executeQuery();
                     while (rs.next()) {
                         //row key
-                        Put put = new Put(getFieldBytes(rs, metas.get(pri).getName(), metas.get(pri).getJtype()));//!!!!!!!!!!!!!!!!!!!!!! MD5 rowkey
+                        byte[] rowkey = getRow(rs, pri, metas.get(pri).getJtype());
+                        Put put = new Put(rowkey);//!!!!!!!!!!!!!!!!!!!!!! MD5 rowkey
                         for(Map.Entry<String, DescMeta> descEntry : metas.entrySet()) {
                             String name = descEntry.getKey();
                             DescMeta meta = descEntry.getValue();
@@ -229,7 +251,9 @@ public class Mysql2HBaseDemo {
                     while (true) {
                         List<Put> puts = new LinkedList<>();
                         long start = System.currentTimeMillis();
+                        boolean isLeap = true;
                         while (!queue.isEmpty()) {
+                            isLeap = false;
                             Put put = queue.take();
                             puts.add(put);
                             if(puts.size() >= BATCH_SIZE || System.currentTimeMillis() - start >= SEND_INTERVAL) {
@@ -239,7 +263,7 @@ public class Mysql2HBaseDemo {
                         //send put into hbase
                         mutator.mutate(puts);
                         //avoid running too fast
-                        if(queue.isEmpty()) {
+                        if(isLeap) {
                             Thread.sleep(SLEEP_SHORT_INTERVAL);
                         }
                         //end the hbase put schedule

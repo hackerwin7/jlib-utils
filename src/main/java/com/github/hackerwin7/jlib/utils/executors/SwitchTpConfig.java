@@ -58,8 +58,8 @@ public class SwitchTpConfig {
             String constr = URLClient.getFromUrl(TrainBdpConfig.BDP_URL + pid);
             JSONObject jconf = JSONObject.fromObject(constr);
             JSONObject jconft = JSONObject.fromObject(constrt);
-            writeConf("tp-" + tid + KEY_FORMAT_TEST, switchConf(jconf, jconft).getJSONObject("data").toString());
-            getConf("tp-" + tid + KEY_FORMAT_TEST);
+            writeConf("tp-" + tid + KEY_FORMAT, switchConf(jconf, jconft).getJSONObject("data").toString());
+            getConf("tp-" + tid + KEY_FORMAT);
             ordersNum++;
         }
     }
@@ -71,13 +71,15 @@ public class SwitchTpConfig {
         old.getJSONObject("data").put("source_slaveId", Long.valueOf(oldt.getJSONObject("data").getString("source_slaveId") + "127"));
         old.getJSONObject("data").put("source_user", oldt.getJSONObject("data").getString("source_user"));
         old.getJSONObject("data").put("hbase_tablename", "rbdm:" + "jdorders_" + ordersNum);
-        //old.getJSONObject("data").put("target.quorum", "172.19.186.89,172.19.186.90,172.19.186.91,172.19.186.93,172.19.186.93");
-        old.getJSONObject("data").put("target.quorum", "172.17.36.54,172.17.36.55,172.17.36.56");
+        old.getJSONObject("data").put("target.quorum", "172.19.186.89,172.19.186.90,172.19.186.91,172.19.186.93,172.19.186.93");
+        //old.getJSONObject("data").put("target.quorum", "172.17.36.54,172.17.36.55,172.17.36.56");
         old.getJSONObject("data").put("target.clientport", "2181");
-        //old.getJSONObject("data").put("target.hbase.zkroot", "/hbase_paris");
-        old.getJSONObject("data").put("target.hbase.zkroot", "/hbase112");
+        old.getJSONObject("data").put("target.hbase.zkroot", "/hbase_paris");
+        //old.getJSONObject("data").put("target.hbase.zkroot", "/hbase112");
         old.getJSONObject("data").put("family", "d");
         old.getJSONObject("data").put("rowkey_type", "long");
+        old.getJSONObject("data").put("pool.size", "50");
+        old.getJSONObject("data").put("retry.num", "2");
 
         JSONArray jarr = old.getJSONObject("data").getJSONArray("db_tab_meta");
         for(int i = 0; i <= jarr.size() - 1; i++) {

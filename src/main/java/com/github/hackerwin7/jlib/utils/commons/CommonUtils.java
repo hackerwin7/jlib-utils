@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * common utils for jdk
@@ -20,5 +22,13 @@ public class CommonUtils {
             in = new FileInputStream(cnf);
         }
         return in;
+    }
+
+    public static String showBytes(byte[] bytes) {
+        List<String> ss = new ArrayList<>();
+        for(int i = 0; i <= bytes.length - 1; i++) {
+            ss.add(String.valueOf(bytes[i]));
+        }
+        return StringUtils.join(ss, ",");
     }
 }
