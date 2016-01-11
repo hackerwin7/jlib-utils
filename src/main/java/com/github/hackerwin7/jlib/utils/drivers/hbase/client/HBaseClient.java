@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.drivers.hbase.client;
 
+import com.github.hackerwin7.jlib.utils.commons.convert.Convert;
 import com.github.hackerwin7.jlib.utils.drivers.hbase.conf.HBaseConf;
 import com.github.hackerwin7.jlib.utils.drivers.hbase.data.HData;
 import org.apache.commons.lang3.StringUtils;
@@ -254,6 +255,29 @@ public class HBaseClient {
 
     /************************ hbase table operator ****************************/
 
+
+    /**
+     * origin put
+     * @param tbName
+     * @param put
+     * @throws Exception
+     */
+    public void putOrigin(String tbName, Put put) throws Exception {
+        Table table = getTable(tbName);
+        table.put(put);
+    }
+
+    /**
+     * origin puts
+     * @param tbName
+     * @param puts
+     * @throws Exception
+     */
+    public void putOrigin(String tbName, List<Put> puts) throws Exception {
+        Table table = getTable(tbName);
+        table.put(puts);
+    }
+
     /**
      * put single data
      * @param tbName
@@ -262,10 +286,7 @@ public class HBaseClient {
      */
     public void put(String tbName, HData data) throws Exception {
         Table table = getTable(tbName);
-        Put put = new Put(data.getRowkey());
-        for(HData.HValue value : data.getValues()) {
-            put.addColumn(value.getFamily(), value.getQualifier(), value.getValue());
-        }
+        Put put = Convert.hdata2put(data);
         table.put(put);
     }
 
@@ -279,31 +300,44 @@ public class HBaseClient {
         Table table = getTable(tbName);
         List<Put> puts = new ArrayList<>();
         for(HData data : datas) {
-            Put put = new Put(data.getRowkey());
-            for(HData.HValue value : data.getValues()) {
-                put.addColumn(value.getFamily(), value.getQualifier(), value.getValue());
-            }
+            Put put = Convert.hdata2put(data);
             puts.add(put);
         }
         table.put(puts);
     }
 
     /**
-     * put bulk datas
+     * async mutate
      * @param tbName
-     * @param datas
+     * @param put
      * @throws Exception
      */
-    public void putBulk(String tbName, List<HData> datas) throws Exception {
-        BufferedMutator mutator = getMutator(tbName);
-        List<Put> puts = new ArrayList<>();
-        for(HData data : datas) {
-            Put put = new Put(data.getRowkey());
-            put.addColumn(data.getFamily(), data.getQualifier(), data.getValue());
-            puts.add(put);
-        }
-        mutator.mutate(puts);
-        mutator.flush();
+    public void putAsyncOrigin(String tbName, Put put) throws Exception {
+        BufferedMutator asyncMutator = getAsyncMutator(tbName);
+        asyncMutator.mutate(put);
+    }
+
+    /**
+     * async batch mutate
+     * @param tbName
+     * @param puts
+     * @throws Exception
+     */
+    public void putAsyncOrigin(String tbName, List<Put> puts) throws Exception {
+        BufferedMutator asyncMutator = getAsyncMutator(tbName);
+        asyncMutator.mutate(puts);
+    }
+
+    /**
+     * async put HData
+     * @param tbName
+     * @param data
+     * @throws Exception
+     */
+    public void putAsync(String tbName, HData data) throws Exception {
+        BufferedMutator asyncMutator = getAsyncMutator(tbName);
+        Put put = Convert.hdata2put(data);
+        asyncMutator.mutate(put);
     }
 
     /**
@@ -317,8 +351,7 @@ public class HBaseClient {
         BufferedMutator asyncMutator = getAsyncMutator(tbName);
         List<Put> puts = new ArrayList<>();
         for(HData data : datas) {
-            Put put = new Put(data.getRowkey());
-            put.addColumn(data.getFamily(), data.getQualifier(), data.getValue());
+            Put put = Convert.hdata2put(data);
             puts.add(put);
         }
         asyncMutator.mutate(puts);

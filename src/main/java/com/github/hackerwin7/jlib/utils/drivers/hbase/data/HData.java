@@ -1,46 +1,41 @@
 package com.github.hackerwin7.jlib.utils.drivers.hbase.data;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.github.hackerwin7.jlib.utils.commons.wrap.ByteArrayWrapper;
+
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
  * User: hackerwin7
  * Date: 2015/12/23
  * Time: 2:43 PM
- * Desc: hbase data for hbase client
+ * Desc: hbase data for hbase client, include single rowkey, multiple family, multiple * multiple qualifier, mul * mul value
  */
 public class HData {
-    private byte[] rowkey;
-    @Deprecated
-    private byte[] family;
-    @Deprecated
-    private byte[] qualifier;
-    @Deprecated
-    private byte[] value;
-    private String tablename;
-    private String namespace;
+    private byte[] rowkey = null;
+    private Map<ByteArrayWrapper, Set<HValue>> vals = new HashMap<>(); // key = family, value = <qualifier, value>
 
-    private List<HValue> values = new ArrayList<>();
-
-    public void addValue(HValue value) {
-        values.add(value);
-    }
-
+    /* qualifier and value, override equals and hash code */
     public class HValue {
-        private byte[] family;
-        private byte[] qualifier;
-        private byte[] value;
+        private final byte[] qualifier;
+        private final byte[] value;
 
-        public HValue(byte[] family, byte[] qualifier, byte[] value) {
-            this.family = family;
+        public HValue(byte[] qualifier, byte[] value) {
             this.qualifier = qualifier;
             this.value = value;
         }
 
+        @Override
+        public boolean equals(Object other) {
+            if(other instanceof HValue)
+                return Arrays.equals(qualifier, ((HValue) other).getQualifier());
+            else
+                return false;
+        }
 
-        public byte[] getFamily() {
-            return family;
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(qualifier);
         }
 
         public byte[] getQualifier() {
@@ -50,111 +45,86 @@ public class HData {
         public byte[] getValue() {
             return value;
         }
-
     }
 
-    private HData(HData.Builder builder) {
-        rowkey = builder.rowkey;
-        family = builder.family;
-        qualifier = builder.qualifier;
-        value = builder.value;
-        tablename = builder.tablename;
-        namespace = builder.namespace;
-        values.addAll(builder.values);
+    /**
+     * default constructor
+     * @param rowkey
+     */
+    public HData(byte[] rowkey) {
+        this.rowkey = rowkey;
     }
 
-    public static HData.Builder create() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private byte[] rowkey;
-        @Deprecated
-        private byte[] family;
-        @Deprecated
-        private byte[] qualifier;
-        @Deprecated
-        private byte[] value;
-        private String tablename;
-        private String namespace;
-
-        private List<HValue> values = new ArrayList<>();
-
-        private Builder() {
-
-        }
-
-        public Builder rowkey(byte[] rowkey) {
-            this.rowkey = rowkey;
-            return this;
-        }
-
-        @Deprecated
-        public Builder family(byte[] family) {
-            this.family = family;
-            return this;
-        }
-
-        @Deprecated
-        public Builder qualifier(byte[] qualifier) {
-            this.qualifier = qualifier;
-            return this;
-        }
-
-        @Deprecated
-        public Builder value(byte[] value) {
-            this.value = value;
-            return this;
-        }
-
-        public Builder tablename(String tablename) {
-            this.tablename = tablename;
-            return this;
-        }
-
-        public Builder value(HValue value) {
-            values.add(value);
-            return this;
-        }
-
-        public Builder namespace(String namespace) {
-            this.namespace = namespace;
-            return this;
-        }
-
-        public HData build() {
-            return new HData(this);
-        }
-    }
-
+    /**
+     * get rowkey
+     * @return rowkey
+     */
     public byte[] getRowkey() {
         return rowkey;
     }
 
-    @Deprecated
-    public byte[] getFamily() {
-        return family;
+    /**
+     * exist family
+     * @param family
+     * @return bool
+     */
+    public boolean exist(byte[] family) {
+        return vals.containsKey(new ByteArrayWrapper(family));
     }
 
-    @Deprecated
-    public byte[] getQualifier() {
-        return qualifier;
+    /**
+     * exist family, qualifier
+     * @param family
+     * @param qualifier
+     * @return bool
+     */
+    public boolean exist(byte[] family, byte[] qualifier) {
+        if(!exist(family))
+            return false;
+        return vals.get(new ByteArrayWrapper(family)).contains(new HValue(qualifier, null));
     }
 
-    @Deprecated
-    public byte[] getValue() {
-        return value;
+    /**
+     * add family
+     * @param family
+     */
+    public void add(byte[] family) {
+        ByteArrayWrapper baw = new ByteArrayWrapper(family);
+        if(!vals.containsKey(baw))
+            vals.put(baw, new HashSet<HValue>());
     }
 
-    public String getTablename() {
-        return tablename;
+    /**
+     * add a columnByteArrayWrapper(qualifier)
+     * @param family
+     * @param qualifier
+     * @param value
+     */
+    public void add(byte[] family, byte[] qualifier, byte[] value) {
+        ByteArrayWrapper baw = new ByteArrayWrapper(family);
+        if(!exist(family))
+            add(family);
+        vals.get(baw).add(new HValue(qualifier, value));
     }
 
-    public String getNamespace() {
-        return namespace;
+    /**
+     * get multiple columns
+     * @param family
+     * @return HValues
+     */
+    public Set<HValue> getColumns(byte[] family) {
+        return vals.get(new ByteArrayWrapper(family));
     }
 
-    public List<HValue> getValues() {
-        return values;
+    /**
+     * get list of family
+     * @return families
+     */
+    public List<byte[]> getFamilyList() {
+        List<byte[]> families = new ArrayList<>();
+        for(Map.Entry<ByteArrayWrapper, Set<HValue>> entry : vals.entrySet()) {
+            families.add(entry.getKey().getData());
+        }
+        return families;
     }
 }

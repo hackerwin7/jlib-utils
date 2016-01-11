@@ -5,14 +5,13 @@ import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyColumn;
 import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyData;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -68,5 +67,22 @@ public class Convert {
             in = new FileInputStream(cnf);
         }
         return in;
+    }
+
+    /**
+     * convert hdata to put
+     * @param data
+     * @return put
+     */
+    public static Put hdata2put(HData data) {
+        Put put = new Put(data.getRowkey());
+        List<byte[]> families = data.getFamilyList();
+        for(byte[] family : families) {
+            Set<HData.HValue> values = data.getColumns(family);
+            for(HData.HValue value : values) {
+                put.addColumn(family, value.getQualifier(), value.getValue());
+            }
+        }
+        return put;
     }
 }
