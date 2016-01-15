@@ -27,7 +27,7 @@ public class URLClient {
     }
 
     /**
-     * get string data from url
+     * getOrigin string data from url
      * @return string
      * @throws Exception
      */
@@ -45,7 +45,7 @@ public class URLClient {
     }
 
     /**
-     * get string data from specified url
+     * getOrigin string data from specified url
      * @param url
      * @return string data
      * @throws Exception

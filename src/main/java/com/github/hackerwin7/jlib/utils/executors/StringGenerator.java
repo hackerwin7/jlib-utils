@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.executors;
 
+import com.github.hackerwin7.jlib.utils.drivers.file.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
@@ -13,8 +14,8 @@ import java.util.List;
  * Desc:
  */
 public class StringGenerator {
-    public static void main(String[] args) {
-        proc2();
+    public static void main(String[] args) throws Exception {
+        proc3();
     }
 
     public static void proc1() {
@@ -32,6 +33,14 @@ public class StringGenerator {
         for(String id : strs) {
             System.out.println("create /checkpoint/" + "tp-" + id + SwitchTpConfig.KEY_FORMAT_TEST + " init");
             System.out.println("create /checkpoint/" + "tp-" + id + SwitchTpConfig.KEY_FORMAT_TEST + "/TP init");
+        }
+    }
+
+    public static void proc3() throws Exception {
+        List<String> types = FileUtils.file2List("types.list");
+        for(String type : types) {
+            System.out.println("case " + type + ":");
+            System.out.println("    return \"" + type + "\";");
         }
     }
 }

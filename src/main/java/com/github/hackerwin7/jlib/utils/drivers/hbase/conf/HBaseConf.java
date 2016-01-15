@@ -37,7 +37,7 @@ public class HBaseConf {
     }
 
     /**
-     * get key value property
+     * getOrigin key value property
      * @param key
      * @return prop value
      */

@@ -128,7 +128,7 @@ public class SwitchTpConfig {
         appid = URLEncoder.encode(appid, enc);
         String token = "RQLMPXULF3EG23CPZL3U257B7Y";
         token = URLEncoder.encode(token, enc);
-        String addr = "http://atom.bdp.jd.local/api/site/get";
+        String addr = "http://atom.bdp.jd.local/api/site/getOrigin";
         String time = String.valueOf(System.currentTimeMillis());
         //data
         JSONObject jdata = new JSONObject();
@@ -157,7 +157,7 @@ public class SwitchTpConfig {
         appid = URLEncoder.encode(appid, enc);
         String token = "RQLMPXULF3EG23CPZL3U257B7Y";
         token = URLEncoder.encode(token, enc);
-        String addr = "http://test.atom.bdp.jd.com/api/site/get";
+        String addr = "http://test.atom.bdp.jd.com/api/site/getOrigin";
         String time = String.valueOf(System.currentTimeMillis());
         //data
         JSONObject jdata = new JSONObject();
@@ -180,7 +180,7 @@ public class SwitchTpConfig {
         appid = URLEncoder.encode(appid, enc);
         String token = "RQLMPXULF3EG23CPZL3U257B7Y";
         token = URLEncoder.encode(token, enc);
-        String addr = "http://test.atom.bdp.jd.com/api/site/get";
+        String addr = "http://test.atom.bdp.jd.com/api/site/getOrigin";
         String time = String.valueOf(System.currentTimeMillis());
         //data
         String data = "{\"key\":\"" + jobId + "\",\"erp\":\"fanwenqi\"," + "\"model\":\"rpc\"}";
@@ -200,7 +200,7 @@ public class SwitchTpConfig {
     }
 
     public String switchJob(String jobId) throws Exception {
-        //get tracker jodid and parser jobid
+        //getOrigin tracker jodid and parser jobid
         String tid = jobId;
         String pid = tid.replaceFirst("2002", "2102");
         String tconfStr = URLClient.getFromUrl(TrainBdpConfig.BDP_URL + tid);

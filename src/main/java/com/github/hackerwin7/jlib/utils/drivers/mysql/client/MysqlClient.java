@@ -1,15 +1,14 @@
 package com.github.hackerwin7.jlib.utils.drivers.mysql.client;
 
 import com.github.hackerwin7.jlib.utils.drivers.mysql.conf.MysqlConf;
-import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyColumn;
 import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyData;
+import com.github.hackerwin7.jlib.utils.drivers.queue.blocking.BlockingDataQueue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,6 +18,9 @@ import java.util.Map;
  * Desc: mysql jdbc client
  */
 public class MysqlClient {
+    /*constants*/
+    public static final int QUEUE_DEFAULT_SIZE = 10000;
+
     /*logger*/
     private static Logger logger = Logger.getLogger(MysqlClient.class);
 
@@ -28,6 +30,9 @@ public class MysqlClient {
 
     /*driver*/
     private Connection conn = null;
+
+    /*queue*/
+    private BlockingDataQueue<MyData> queue = new BlockingDataQueue<>(QUEUE_DEFAULT_SIZE);
 
     /**
      * connect the mysql server using jdbc
@@ -77,55 +82,69 @@ public class MysqlClient {
         conn.setAutoCommit(true);
     }
 
+//    /**
+//     * random insert with table name
+//     * @param tb
+//     * @param count
+//     * @throws Exception
+//     */
+//    public void rdInsert(String tb, int count) throws Exception {
+//        if(counts > batchSize) {
+//            rdInsertAsync(tb, count);
+//        } else {
+//            rdInsertSync(tb, count);
+//        }
+//    }
+
     /**
-     * queryData from sql , receive list MyData
+     * query from sql , receive list MyData
      * @param sql
      * @return list of MyData
      * @throws Exception
      */
-    public List<MyData> queryData(String sql) throws Exception {
-        //describe table
-        String tbName = tableFromSql(sql);
-        MyData desc = desc(tbName);
-        Map<String, MyColumn> columns = desc.getColumns();
-        //select table
+    public List<MyData> query(String sql) throws Exception {
+        //get describe
+        MyData descData = desc(getTbFromSql(sql));
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
         List<MyData> datas = new ArrayList<>();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        ResultSet res = stmt.executeQuery();
-        while (res.next()) {
-            MyData data = MyData.create()
-                    .tbname(tbName)
-                    .dbname(db)
-                    .build();
-            for(Map.Entry<String, MyColumn> columnEntry : columns.entrySet()) {
-                MyColumn column = columnEntry.getValue();
-                String name = column.getName();
-                String jtype = column.getJtype();
-                data.addCol(
-                    MyColumn.create()
-                        .name(name)
-                        .jtype(jtype)
-                        .value(getValue(res, name, jtype))
-                        .build()
-                );
-            }
+        while (rs.next()) {
+            //res to data
+            MyData data = getDataFromRes(rs, descData);
             datas.add(data);
         }
-        res.close();
-        stmt.close();
+        rs.close();
+        ps.close();
         return datas;
     }
 
     /**
-     * query result set
+     * query sql retrieve data into queue
      * @param sql
-     * @return result set
      * @throws Exception
      */
-    public ResultState queryResult(String sql) throws Exception {
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
-        return new ResultState(stmt, rs);
+    public void queryAsync(final String sql) throws Exception {
+        Thread th = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MyData descData = desc(getTbFromSql(sql));
+                    PreparedStatement ps = conn.prepareStatement(sql);
+                    ResultSet rs = ps.executeQuery();
+                    List<MyData> datas = new ArrayList<>();
+                    while (rs.next()) {
+                        //res to data
+                        MyData data = getDataFromRes(rs, descData);
+                        queue.put(data);
+                    }
+                    rs.close();
+                    ps.close();
+                } catch (Throwable e) {
+                    logger.error(e.getMessage());
+                }
+            }
+        });
+        th.start();
     }
 
     /**
@@ -137,21 +156,21 @@ public class MysqlClient {
     public MyData desc(String tbName) throws Exception {
         PreparedStatement stmt = conn.prepareStatement("select * from " + tbName + " limit 1");
         ResultSetMetaData rsd = stmt.executeQuery().getMetaData();
-        MyData data = MyData.create()
-                .dbname(db)
-                .tbname(tbName)
-                .build();
-        for (int i = 0; i <= rsd.getColumnCount() - 1; i++) {
-            String jtype = rsd.getColumnClassName(i + 1);
-            String mtype = rsd.getColumnTypeName(i + 1);
-            int size = rsd.getColumnDisplaySize(i + 1);
-            String name = rsd.getColumnName(i + 1);
-            data.addCol(MyColumn.create()
-            .jtype(jtype)
-            .mtype(mtype)
-            .size(size)
-            .name(name)
-            .build());
+        MyData data = new MyData();
+        for (int i = 1; i <= rsd.getColumnCount(); i++) {
+            String jtype = rsd.getColumnClassName(i);
+            String mtype = rsd.getColumnTypeName(i);
+            int size = rsd.getColumnDisplaySize(i);
+            String name = rsd.getColumnName(i);
+            MyData.Column column = MyData.Column.createBuilder()
+                    .name(name)
+                    .value(null)
+                    .javaType(jtype)
+                    .sqlType(mtype)
+                    .length(size)
+                    .isNull(true)
+                    .build();
+            data.setColumn(column);
         }
         return data;
     }
@@ -162,7 +181,7 @@ public class MysqlClient {
      * @return table name
      * @throws Exception
      */
-    private String tableFromSql(String sql) throws Exception {
+    private String getTbFromSql(String sql) throws Exception {
         if(StringUtils.containsIgnoreCase(sql, "from")) {
             String sub = StringUtils.substringAfter(sql, "from ");
             String table = StringUtils.substringBefore(sub, " ");
@@ -173,63 +192,69 @@ public class MysqlClient {
     }
 
     /**
-     * get mtype and result set
+     * get mydata from result set
      * @param rs
-     * @param type
-     * @return string value
+     * @param desc
+     * @return mydata
      */
-    private String getValue(ResultSet rs, String name, String type) throws Exception {
-        if(StringUtils.containsIgnoreCase(type, "string")) {
-            return rs.getString(name);
-        } else if(StringUtils.containsIgnoreCase(type, "bigint")) {
-            return String.valueOf(rs.getBigDecimal(name));
-        } else if(StringUtils.containsIgnoreCase(type, "int")) {
-            return String.valueOf(rs.getInt(name));
-        } else if(StringUtils.containsIgnoreCase(type, "bool")) {
-            return String.valueOf(rs.getBoolean(name));
-        } else if(StringUtils.containsIgnoreCase(type, "date")) {
-            return String.valueOf(rs.getDate(name));
-        } else if(StringUtils.containsIgnoreCase(type, "double")) {
-            return String.valueOf(rs.getDouble(name));
-        } else if(StringUtils.containsIgnoreCase(type, "long")) {
-            return String.valueOf(rs.getLong(name));
-        } else if(StringUtils.containsIgnoreCase(type, "timestamp")) {
-            return String.valueOf(rs.getTimestamp(name));
+    private MyData getDataFromRes(ResultSet rs, MyData desc) throws Exception {
+        MyData data = new MyData();
+        for(MyData.Column column : desc.getColumnList()) {
+            MyData.Column vc = getColFromRes(rs, column);
+            data.setColumn(vc);
         }
-        else {
-            throw new Exception("no support exception with name = " + name + ", mtype = " + type);
-        }
+        return data;
     }
 
-    public class ResultState {
-        private ResultSet rs = null;
-        private PreparedStatement stmt = null;
-
-        public ResultState(PreparedStatement stmt, ResultSet rs) {
-            this.stmt = stmt;
-            this.rs = rs;
+    private MyData.Column getColFromRes(ResultSet rs, MyData.Column descCol) throws Exception {
+        String name = descCol.getName();
+        String value = descCol.getValue();
+        String jtype = descCol.getJavaType();
+        String mtype = descCol.getSqlType();
+        int length = descCol.getLength();
+        switch (jtype) {
+            case "java.lang.Long":
+                value = String.valueOf(rs.getLong(name));
+                break;
+            case "java.lang.String":
+                value = rs.getString(name);
+                break;
+            case "java.lang.Integer":
+                value = String.valueOf(rs.getInt(name));
+                break;
+            case "java.sql.Timestamp":
+                value = String.valueOf(rs.getTimestamp(name));
+                break;
+            case "java.math.BigDecimal":
+                value = String.valueOf(rs.getBigDecimal(name));
+                break;
+            default:
+                value = String.valueOf(rs.getObject(name));
         }
-
-        public void close() throws Exception {
-            if(rs != null) {
-                rs.close();
-            }
-            if(stmt != null) {
-                stmt.close();
-            }
-        }
-
-        public ResultSet getRs() {
-            return rs;
-        }
-
-        public PreparedStatement getStmt() {
-            return stmt;
-        }
+        MyData.Column column = MyData.Column.createBuilder()
+                .name(name)
+                .value(value)
+                .javaType(jtype)
+                .sqlType(mtype)
+                .length(length)
+                .isNull(false)
+                .build();
+        return column;
     }
 
+    /**
+     * set batch size
+     * @param batchSize
+     */
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
     }
 
+    public MyData getMyData() throws Exception {
+        return queue.take();
+    }
+
+    public boolean isDataQueueEmpty() {
+        return queue.isEmpty();
+    }
 }

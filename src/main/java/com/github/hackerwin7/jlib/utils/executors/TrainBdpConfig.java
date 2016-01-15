@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 /**
- * get source host in train.bdp.com......
+ * getOrigin source host in train.bdp.com......
  * Created by fff on 10/28/15.
  */
 public class TrainBdpConfig {
@@ -28,7 +28,7 @@ public class TrainBdpConfig {
     public static Set<String> topicSum = new HashSet<String>();
 
     /**
-     * get the ip config info
+     * getOrigin the ip config info
      * @param args
      * @throws Exception
      */

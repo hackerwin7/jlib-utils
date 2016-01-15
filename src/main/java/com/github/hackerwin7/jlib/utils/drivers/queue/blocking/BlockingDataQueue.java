@@ -30,9 +30,9 @@ public class BlockingDataQueue<E> {
     /**
      * put in this data, data is not null
      * @param e
-     * @throws Throwable
+     * @throws Exception
      */
-    public void put(E e) throws Throwable {
+    public void put(E e) throws Exception {
         if(e != null)
             queue.put(e);
     }
@@ -40,9 +40,9 @@ public class BlockingDataQueue<E> {
     /**
      * consume a data5959
      * @return E data
-     * @throws Throwable
+     * @throws Exception
      */
-    public E take() throws Throwable {
+    public E take() throws Exception {
         return queue.take();
     }
 

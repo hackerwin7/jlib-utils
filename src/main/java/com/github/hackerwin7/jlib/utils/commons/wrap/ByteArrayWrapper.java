@@ -46,7 +46,7 @@ public class ByteArrayWrapper {
     }
 
     /**
-     * get data
+     * getOrigin data
      * @return
      */
     public byte[] getData() {

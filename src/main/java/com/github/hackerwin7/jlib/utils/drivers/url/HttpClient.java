@@ -19,7 +19,7 @@ import java.util.Map;
  * User: hackerwin7
  * Date: 2015/12/15
  * Time: 10:32 AM
- * Desc: get or post to request and response
+ * Desc: getOrigin or post to request and response
  */
 public class HttpClient {
     /*logger*/
@@ -44,7 +44,7 @@ public class HttpClient {
     }
 
     /**
-     * http get
+     * http getOrigin
      * @param url
      * @return string
      */

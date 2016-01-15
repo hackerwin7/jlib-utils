@@ -27,7 +27,7 @@ public class ZkExecutorDemo {
             case "set":
                 zk.set(path, data);
                 break;
-            case "get":
+            case "getOrigin":
                 System.out.println(zk.get(path));
                 break;
             case "rmr":

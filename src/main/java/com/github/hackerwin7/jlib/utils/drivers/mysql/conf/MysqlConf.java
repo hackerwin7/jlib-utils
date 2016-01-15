@@ -41,7 +41,7 @@ public class MysqlConf {
     }
 
     /**
-     * get property value
+     * getOrigin property value
      * @param key
      * @return
      */

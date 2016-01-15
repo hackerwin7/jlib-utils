@@ -106,7 +106,7 @@ public class KafkaSimpleConsumer {
      */
     private void start() {
         for(Map.Entry<Integer, Long> entry : offsets.entrySet()) {
-            //get offset partition info for specific consume thread
+            //getOrigin offset partition info for specific consume thread
             int partition = entry.getKey();
             long offset = entry.getValue();
             long endOffset = endOffsets.get(partition);
@@ -142,7 +142,7 @@ public class KafkaSimpleConsumer {
     }
 
     /**
-     * get topic in this consumer
+     * getOrigin topic in this consumer
      * @return topic name
      */
     public String getTopic() {
@@ -168,7 +168,7 @@ public class KafkaSimpleConsumer {
         private int partition = 0;
         private long offset = 0;
         private long endOffset = 0;
-        private Map<String, Integer> brokers = null;//concurrent map get no put
+        private Map<String, Integer> brokers = null;//concurrent map getOrigin no put
         private AtomicBoolean running = new AtomicBoolean(true);
         private List<String> replicaBrokers = new ArrayList<>();
         String clientName = "simple consumer";
@@ -389,7 +389,7 @@ public class KafkaSimpleConsumer {
         }
 
         /**
-         * get offset from topic:partition
+         * getOrigin offset from topic:partition
          * @return offset
          */
         private long getOffset(long minOrmax) {
@@ -407,7 +407,7 @@ public class KafkaSimpleConsumer {
         }
 
         /**
-         * get min offset by specific partition
+         * getOrigin min offset by specific partition
          * @return min offset
          */
         private long getMinOffset() {
@@ -415,7 +415,7 @@ public class KafkaSimpleConsumer {
         }
 
         /**
-         * get max offset
+         * getOrigin max offset
          * @return maxoffset
          */
         private long getMaxOffset() {
@@ -433,7 +433,7 @@ public class KafkaSimpleConsumer {
     }
 
     /**
-     * get queue size
+     * getOrigin queue size
      * @return size of queue
      */
     public int getQueueSize() {

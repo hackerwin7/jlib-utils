@@ -143,8 +143,8 @@ public class Mysql2HBaseDemo {
         hbConn = ConnectionFactory.createConnection(configuration);
         admin = hbConn.getAdmin();
         if(admin == null) {
-            logger.error("get admin failed!!");
-            throw new Exception("get admin unsuccessfully...");
+            logger.error("getOrigin admin failed!!");
+            throw new Exception("getOrigin admin unsuccessfully...");
         }
         //thread nysql running
         myth = new Thread(new Runnable() {

@@ -56,7 +56,7 @@ public class HData {
     }
 
     /**
-     * get rowkey
+     * getOrigin rowkey
      * @return rowkey
      */
     public byte[] getRowkey() {
@@ -108,7 +108,7 @@ public class HData {
     }
 
     /**
-     * get multiple columns
+     * getOrigin multiple columns
      * @param family
      * @return HValues
      */
@@ -117,7 +117,7 @@ public class HData {
     }
 
     /**
-     * get list of family
+     * getOrigin list of family
      * @return families
      */
     public List<byte[]> getFamilyList() {

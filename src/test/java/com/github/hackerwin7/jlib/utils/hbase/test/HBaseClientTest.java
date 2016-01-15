@@ -114,9 +114,9 @@ public class HBaseClientTest {
         init();
         Table table = connection.getTable(TableName.valueOf(tableName));
         Get get = new Get(Bytes.toBytes(rowkey));
-        //get family
+        //getOrigin family
         get.addFamily(Bytes.toBytes(colFamily));
-        //get col
+        //getOrigin col
         get.addColumn(Bytes.toBytes(colFamily), Bytes.toBytes(col));
         Result result = table.get(get);
         showCell(result);

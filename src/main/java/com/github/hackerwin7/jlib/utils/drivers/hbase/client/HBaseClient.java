@@ -37,6 +37,7 @@ public class HBaseClient {
     public static final long TIMER_DELAY_SCHEDULE = 3 * 1000;
     public static final long TIMER_PERIOD_SCHEDULE = 10 * 1000;
     public static final int DEFAULT_SCAN_CACHING = 1000;
+    public static final int LOOKAHEAD_SCAN_SEEK = 2;
 
 
     /**
@@ -56,7 +57,7 @@ public class HBaseClient {
     }
 
     /**
-     * get table from pool
+     * getOrigin table from pool
      * if not exists, create a table
      * @param tbName
      * @return table
@@ -73,7 +74,7 @@ public class HBaseClient {
     }
 
     /**
-     * get/create a mutator with table name, similar to Table
+     * getOrigin/create a mutator with table name, similar to Table
      * @param tbName
      * @return mutator
      * @throws Exception
@@ -89,7 +90,7 @@ public class HBaseClient {
     }
 
     /**
-     * get/create a async mutator with table name, similar to Table and mutator
+     * getOrigin/create a async mutator with table name, similar to Table and mutator
      * @param tbName
      * @return mutator
      * @throws Exception
@@ -149,7 +150,7 @@ public class HBaseClient {
     }
 
     /**
-     * get column families
+     * getOrigin column families
      * @param tbName
      * @return
      * @throws Exception
@@ -159,7 +160,7 @@ public class HBaseClient {
     }
 
     /**
-     * get all column families name
+     * getOrigin all column families name
      * @param tbName
      * @return families name
      * @throws Exception
@@ -240,7 +241,7 @@ public class HBaseClient {
     }
 
     /**
-     * get table name list
+     * getOrigin table name list
      * @return name list
      * @throws Exception
      */
@@ -358,254 +359,262 @@ public class HBaseClient {
     }
 
     /**
-     * filter mode save into hdata
+     * origonal getOrigin
      * @param tbName
-     * @param data
-     * @return hdatas
+     * @param get
+     * @return hdata
      * @throws Exception
      */
-    public List<HData> get(String tbName, HData data) throws Exception {
+    public HData getOrigin(String tbName, Get get) throws Exception {
         Table table = getTable(tbName);
-        Get get = new Get(data.getRowkey());
-        if(data.getFamily() != null && data.getQualifier() != null) {
-            get.addColumn(data.getFamily(), data.getQualifier());
-        } else if(data.getFamily() != null && data.getQualifier() == null) {
-            get.addFamily(data.getFamily());
-        }
         Result res = table.get(get);
-        List<HData> datas = new ArrayList<>();
-        for (Cell cell : res.rawCells()) {
-            datas.add(HData.create()
-                    .rowkey(cell.getRowArray())
-                    .family(cell.getFamilyArray())
-                    .qualifier(cell.getQualifierArray())
-                    .value(cell.getValueArray())
-                    .tablename(tbName)
-                    .build());
-        }
-        return datas;
-    }
-
-    public List<HData> get(String tbName, List<HData> datas) throws Exception {
-        Table table = getTable(tbName);
-        List<Get> gets = new ArrayList<>();
-        for(HData data : datas) {
-            Get get = new Get(data.getRowkey());
-            if(data.getFamily() != null && data.getQualifier() != null) {
-                get.addColumn(data.getFamily(), data.getQualifier());
-            } else if(data.getFamily() != null && data.getQualifier() == null) {
-                get.addFamily(data.getFamily());
-            }
-            gets.add(get);
-        }
-        Result[] ress = table.get(gets);
-        List<HData> hds = new ArrayList<>();
-        for(Result res : ress) {
-            for (Cell cell : res.rawCells()) {
-                hds.add(HData.create()
-                        .rowkey(cell.getRowArray())
-                        .family(cell.getFamilyArray())
-                        .qualifier(cell.getQualifierArray())
-                        .value(cell.getValueArray())
-                        .tablename(tbName)
-                        .build());
-            }
-        }
-        return hds;
+        return Convert.result2hdata(res);
     }
 
     /**
-     * hdata contain filter condition
+     * batch
      * @param tbName
-     * @param data
-     * @return
+     * @param gets
+     * @return list of hdata
      * @throws Exception
      */
-    public boolean existsRow(String tbName, HData data) throws Exception {
+    public List<HData> getOrigin(String tbName, List<Get> gets) throws Exception {
         Table table = getTable(tbName);
-        Get get = new Get(data.getRowkey());
-        if(data.getFamily() != null && data.getQualifier() != null) {
-            get.addColumn(data.getFamily(), data.getQualifier());
-        } else if(data.getFamily() != null && data.getQualifier() == null) {
-            get.addFamily(data.getFamily());
+        Result[] results = table.get(gets);
+        List<HData> hDatas = new ArrayList<>();
+        for(Result result : results) {
+            HData data = Convert.result2hdata(result);
+            hDatas.add(data);
         }
+        return hDatas;
+    }
+
+    /**
+     * overloading
+     * @param tbName
+     * @param rowkey
+     * @return hdata
+     * @throws Exception
+     */
+    public HData get(String tbName, byte[] rowkey) throws Exception {
+        return getOrigin(tbName, new Get(rowkey));
+    }
+
+    public List<HData> get(String tbName, List<byte[]> rows) throws Exception {
+        List<Get> gets = new ArrayList<>();
+        for(byte[] rowkey : rows) {
+            Get get = new Get(rowkey);
+            gets.add(get);
+        }
+        return getOrigin(tbName, gets);
+    }
+
+    /**
+     * hdata parameter
+     * @param tbName
+     * @param data
+     * @return hbase data
+     * @throws Exception
+     */
+    public HData getHdata(String tbName, HData data) throws Exception {
+        return get(tbName, data.getRowkey());
+    }
+
+    public List<HData> getHdata(String tbName, List<HData> datas) throws Exception {
+        List<byte[]> rows = new ArrayList<>();
+        for(HData data : datas) {
+            rows.add(data.getRowkey());
+        }
+        return get(tbName, rows);
+    }
+
+    /**
+     * exists getOrigin
+     * @param tbName
+     * @param get
+     * @return bool
+     * @throws Exception
+     */
+    public boolean existsRow(String tbName, Get get) throws Exception {
+        Table table = getTable(tbName);
         return table.exists(get);
     }
 
     /**
-     * hdata contain row family qualifier
+     * overloading with rowkey
      * @param tbName
-     * @param data
+     * @param rowkey
+     * @return bool
      * @throws Exception
      */
-    public void delete(String tbName, HData data) throws Exception {
-        Table table = getTable(tbName);
-        Delete delete = new Delete(data.getRowkey());
-        if(data.getFamily() != null && data.getQualifier() != null) {
-            delete.addColumn(data.getFamily(), data.getQualifier());
-        } else if(data.getFamily() != null && data.getQualifier() == null) {
-            delete.addFamily(data.getFamily());
-        }
-        table.delete(delete);
+    public boolean existsRow(String tbName, byte[] rowkey) throws Exception {
+        return existsRow(tbName, new Get(rowkey));
     }
 
     /**
-     * simple batch deletes
+     * delete the delte
      * @param tbName
-     * @param datas
+     * @param delete
      * @throws Exception
      */
-    public void delete(String tbName, List<HData> datas) throws Exception {
+    public void deleteOrigin(String tbName, Delete delete) throws Exception {
         Table table = getTable(tbName);
-        List<Delete> deletes = new ArrayList<>();
-        for(HData data : datas) {
-            Delete delete = new Delete(data.getRowkey());
-            if(data.getFamily() != null && data.getQualifier() != null) {
-                delete.addColumn(data.getFamily(), data.getQualifier());
-            } else if(data.getFamily() != null && data.getQualifier() == null) {
-                delete.addFamily(data.getFamily());
-            }
-            deletes.add(delete);
-        }
+        table.delete(delete);
+    }
+
+    public void deleteOrigin(String tbName, List<Delete> deletes) throws Exception {
+        Table table = getTable(tbName);
         table.delete(deletes);
     }
 
     /**
-     * delete bulk data
+     * delete by rowkey
      * @param tbName
-     * @param datas
+     * @param rowkey
      * @throws Exception
      */
-    public void deleteBulk(String tbName, List<HData> datas) throws Exception {
-        BufferedMutator mutator = getMutator(tbName);
+    public void delete(String tbName, byte[] rowkey) throws Exception {
+        deleteOrigin(tbName, new Delete(rowkey));
+    }
+
+    public void delete(String tbName, List<byte[]> rows) throws Exception {
         List<Delete> deletes = new ArrayList<>();
-        for(HData data : datas) {
-            Delete delete = new Delete(data.getRowkey());
-            if(data.getFamily() != null && data.getQualifier() != null) {
-                delete.addColumn(data.getFamily(), data.getQualifier());
-            } else if(data.getFamily() != null && data.getQualifier() == null) {
-                delete.addFamily(data.getFamily());
-            }
-            deletes.add(delete);
+        for(byte[] rowkey : rows) {
+            deletes.add(new Delete(rowkey));
         }
-        mutator.mutate(deletes);
-        mutator.flush();
+        deleteOrigin(tbName, deletes);
     }
 
     /**
-     * async delete no flush at once
+     * delete hdata
      * @param tbName
-     * @param datas
      * @throws Exception
      */
-    public void deleteAsync(String tbName, List<HData> datas) throws Exception {
-        BufferedMutator asyncMutator = getAsyncMutator(tbName);
-        List<Delete> deletes = new ArrayList<>();
+    public void deleteHData(String tbName, HData data) throws Exception {
+        delete(tbName, data.getRowkey());
+    }
+
+    public void deleteHData(String tbName, List<HData> datas) throws Exception {
+        List<byte[]> rows = new ArrayList<>();
         for(HData data : datas) {
-            Delete delete = new Delete(data.getRowkey());
-            if(data.getFamily() != null && data.getQualifier() != null) {
-                delete.addColumn(data.getFamily(), data.getQualifier());
-            } else if(data.getFamily() != null && data.getQualifier() == null) {
-                delete.addFamily(data.getFamily());
-            }
-            deletes.add(delete);
+            rows.add(data.getRowkey());
         }
+        delete(tbName, rows);
+    }
+
+    /**
+     * original delete async
+     * @param tbName
+     * @param deletes
+     * @throws Exception
+     */
+    public void deleteAsyncOrigin(String tbName, List<Delete> deletes) throws Exception {
+        BufferedMutator asyncMutator = getAsyncMutator(tbName);
         asyncMutator.mutate(deletes);
     }
 
-    /**
-     * hdata filter condition
-     * @param tbName
-     * @param data
-     * @return hdata list
-     * @throws Exception
-     */
-    public List<HData> gets(String tbName, HData data) throws Exception {
-        Table table = getTable(tbName);
-        Scan scan = new Scan();
-        if(data.getFamily() != null && data.getQualifier() != null) {
-            scan.addColumn(data.getFamily(), data.getQualifier());
-        } else if(data.getFamily() != null && data.getQualifier() == null) {
-            scan.addFamily(data.getFamily());
+    public void deleteAsync(String tbName, List<byte[]> rows) throws Exception {
+        List<Delete> deletes = new ArrayList<>();
+        for(byte[] rowkey : rows) {
+            deletes.add(new Delete(rowkey));
         }
-        ResultScanner scanner = table.getScanner(scan);
-        List<HData> datas = new ArrayList<>();
-        for(Result res : scanner) {
-            for(Cell cell : res.rawCells()) {
-                datas.add(HData.create()
-                        .rowkey(cell.getRowArray())
-                        .family(cell.getFamilyArray())
-                        .qualifier(cell.getQualifierArray())
-                        .value(cell.getValueArray())
-                        .tablename(tbName)
-                        .build());
-            }
+        deleteAsyncOrigin(tbName, deletes);
+    }
+
+    public void deleteAsyncHData(String tbName, List<HData> datas) throws Exception {
+        List<byte[]> rows = new ArrayList<>();
+        for(HData data : datas) {
+            rows.add(data.getRowkey());
         }
-        scanner.close();
-        return datas;
+        deleteAsync(tbName, rows);
     }
 
     /**
-     * origin hbase scan interface
+     * original scanner
      * @param tbName
      * @param scan
-     * @return hdata list
+     * @return
      * @throws Exception
      */
-    private List<HData> gets(String tbName, Scan scan) throws Exception {
+    public List<HData> getsOrigin(String tbName, Scan scan) throws Exception {
         Table table = getTable(tbName);
-        ResultScanner scanner = table.getScanner(scan);
+        ResultScanner scanner = null;
         List<HData> datas = new ArrayList<>();
-        for(Result res : scanner) {
-            for(Cell cell : res.rawCells()) {
-                datas.add(HData.create()
-                        .rowkey(cell.getRowArray())
-                        .family(cell.getFamilyArray())
-                        .qualifier(cell.getQualifierArray())
-                        .value(cell.getValueArray())
-                        .tablename(tbName)
-                        .build());
+        try {
+            scanner = table.getScanner(scan);
+            for(Result res : scanner) {
+                HData data = Convert.result2hdata(res);
+                datas.add(data);
             }
+        } catch (Throwable e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            if(scanner != null)
+                scanner.close();
         }
-        scanner.close();
         return datas;
     }
 
     /**
-     * scan from start to stop - 1
+     * scan data by start rowkey and stop rowkey
      * @param tbName
-     * @param filter
      * @param start
      * @param stop
-     * @return hdatas
+     * @return list of hdata
      * @throws Exception
      */
-    public List<HData> gets(String tbName, HData filter, byte[] start, byte[] stop) throws Exception {
+    public List<HData> gets(String tbName, byte[] start, byte[] stop) throws Exception {
         Scan scan = new Scan();
         scan.setCaching(DEFAULT_SCAN_CACHING);
-        filterScan(filter, scan);
         scan.setStartRow(start);
         scan.setStopRow(stop);
-        return gets(tbName, scan);
+        return getsOrigin(tbName, scan);
+    }
+
+    public List<HData> gets(String tbName, byte[] start, byte[] stop, byte[] family) throws Exception {
+        Scan scan = new Scan();
+        scan.addFamily(family);
+        scan.setCaching(DEFAULT_SCAN_CACHING);
+        scan.setStartRow(start);
+        scan.setStopRow(stop);
+        return getsOrigin(tbName, scan);
+    }
+
+    public List<HData> gets(String tbName, byte[] start, byte[] stop, byte[] family, byte[] qualifier) throws Exception {
+        Scan scan = new Scan();
+        scan.addColumn(family, qualifier);
+        scan.setCaching(DEFAULT_SCAN_CACHING);
+        scan.setStartRow(start);
+        scan.setStopRow(stop);
+        return getsOrigin(tbName, scan);
     }
 
     /**
      * set start and load count hdatas to list
      * @param tbName
-     * @param filter
      * @param start
      * @param count
      * @param nextHandler
      * @return hdatas
      * @throws Exception
      */
-    public List<HData> gets(String tbName, HData filter, byte[] start, int count, NextRowkeyHandler nextHandler) throws Exception {
+    public List<HData> gets(String tbName, byte[] start, int count, NextRowkeyHandler nextHandler) throws Exception {
         byte[] stop = getStop(start, count, nextHandler);
-        return gets(tbName, filter, start, stop);
+        return gets(tbName, start, stop);
+    }
+
+    public List<HData> gets(String tbName, byte[] start, int count, NextRowkeyHandler nextHandler, byte[] family) throws Exception {
+        byte[] stop = getStop(start, count, nextHandler);
+        return gets(tbName, start, stop, family);
+    }
+
+    public List<HData> gets(String tbName, byte[] start, int count, NextRowkeyHandler nextHandler, byte[] family, byte[] qualifier) throws Exception {
+        byte[] stop = getStop(start, count, nextHandler);
+        return gets(tbName, start, stop, family, qualifier);
     }
 
     /**
-     * get stop row key with next handler
+     * getOrigin stop row key with next handler
      * @param start
      * @param cnt
      * @param handler
@@ -621,7 +630,7 @@ public class HBaseClient {
     /*next row key handler as method parameter*/
     public interface NextRowkeyHandler {
         /**
-         * get next rowkey
+         * getOrigin next rowkey
          * @param cur
          * @return
          */
@@ -652,20 +661,6 @@ public class HBaseClient {
     }
 
     /**
-     * add column or add family
-     * @param filter
-     * @param scan
-     * @throws Exception
-     */
-    private void filterScan(HData filter, Scan scan) throws Exception {
-        if(filter.getFamily() != null && filter.getQualifier() != null) {
-            scan.addColumn(filter.getFamily(), filter.getQualifier());
-        } else if(filter.getFamily() != null && filter.getQualifier() == null) {
-            scan.addFamily(filter.getFamily());
-        }
-    }
-
-    /**
      * close table pool
      * @throws Exception
      */
@@ -690,8 +685,10 @@ public class HBaseClient {
             for(Map.Entry<String, BufferedMutator> mutatorEntry : mpool.entrySet()) {
                 String tableName = mutatorEntry.getKey();
                 BufferedMutator mutator = mutatorEntry.getValue();
-                if(mutator != null)
+                if(mutator != null) {
+                    mutator.flush();//before the close flush the mutator
                     mutator.close();
+                }
             }
         }
     }

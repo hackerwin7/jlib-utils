@@ -93,7 +93,7 @@ public class KafkaConf {
     }
 
     /**
-     * get properties value
+     * getOrigin properties value
      * @param key
      * @return
      */
@@ -110,7 +110,7 @@ public class KafkaConf {
     }
 
     /**
-     * get config properties
+     * getOrigin config properties
      * @return props
      */
     public Properties getProps() {

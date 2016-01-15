@@ -75,7 +75,7 @@ public class KafkaUtils {
     }
 
     /**
-     * get topic information by using topic and zkconn
+     * getOrigin topic information by using topic and zkconn
      * @param topic
      * @return topic info
      */
@@ -83,7 +83,7 @@ public class KafkaUtils {
         //zk path
         String topicPath = zkroot + ZK_TOPICS_PATH + "/" + topic;
         String partitionPath = topicPath + "/partitions";
-        //get zk data
+        //getOrigin zk data
         String topicInfoStr = zk.get(topicPath);
         List<String> partitionsList = zk.getChildren(partitionPath);
         //make partitions
@@ -93,7 +93,7 @@ public class KafkaUtils {
         Map<Integer, Long> beginOffsets = new HashMap<>();
         Map<Integer, Long> endOffsets = new HashMap<>();
         for(String partStr : partitionsList) {
-            //get partition
+            //getOrigin partition
             int partition = Integer.valueOf(partStr);
             //find broker info
             String brokerStr = findPartitionBrokerStr(topicInfoStr, partStr);

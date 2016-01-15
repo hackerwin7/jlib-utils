@@ -1,11 +1,12 @@
 package com.github.hackerwin7.jlib.utils.commons.convert;
 
 import com.github.hackerwin7.jlib.utils.drivers.hbase.data.HData;
-import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyColumn;
-import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyData;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -84,5 +85,26 @@ public class Convert {
             }
         }
         return put;
+    }
+
+    /**
+     * convert a result into a hdata
+     * Single row result of a Get or Scan query.
+     * @param result
+     * @return hdata
+     */
+    public static HData result2hdata(Result result) throws Exception {
+        HData data = new HData(result.getRow());
+        for(Cell cell : result.rawCells()) {
+            byte[] rowkey = CellUtil.cloneRow(cell);
+            if(!Arrays.equals(rowkey, data.getRowkey())) {
+                throw new Exception("cell's rowkey != result.gerRow()");
+            }
+            byte[] family = CellUtil.cloneFamily(cell);
+            byte[] qualifier = CellUtil.cloneQualifier(cell);
+            byte[] value = CellUtil.cloneValue(cell);
+            data.add(family, qualifier, value);
+        }
+        return data;
     }
 }

@@ -73,7 +73,7 @@ public class ZkClient {
     }
 
     /**
-     * get the zookeeper node
+     * getOrigin the zookeeper node
      * @param path
      * @throws Exception
      */
@@ -87,7 +87,7 @@ public class ZkClient {
 
 
     /**
-     * get children node
+     * getOrigin children node
      * @param path
      * @return list of children node name
      * @throws Exception

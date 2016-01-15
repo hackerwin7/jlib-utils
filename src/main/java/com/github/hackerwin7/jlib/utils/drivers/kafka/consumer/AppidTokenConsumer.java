@@ -73,7 +73,7 @@ public class AppidTokenConsumer {
     private Map<Integer, Long> maxPosPool = new HashMap<Integer, Long>();
 
     /**
-     * get the kafka information
+     * getOrigin the kafka information
      * @param appid
      * @param token
      * @return kafka info
@@ -111,7 +111,7 @@ public class AppidTokenConsumer {
         appid = _appid;
         token = _token;
         try {
-            //get machine info
+            //getOrigin machine info
             info = getInfo(appid, token);
             //construct consumer
             consumer = new JDQSimpleConsumer(new Authentication(appid, token));
@@ -295,7 +295,7 @@ public class AppidTokenConsumer {
     }
 
     /**
-     * get consumer thread state
+     * getOrigin consumer thread state
      */
     public String getState() {
         return thCon.getState().toString();
@@ -335,7 +335,7 @@ public class AppidTokenConsumer {
     }
 
     /**
-     * get queue length
+     * getOrigin queue length
      * @return blocking queue's size
      */
     public int getSize() {
