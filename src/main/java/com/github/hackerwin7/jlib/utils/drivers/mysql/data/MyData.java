@@ -69,6 +69,16 @@ public class MyData {
         return tbname;
     }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ips:").append(ip).append(",");
+        sb.append("port:").append(port).append(",");
+        sb.append("dbname:").append(dbname).append(",");
+        sb.append("tbname:").append(tbname).append(",");
+        sb.append("columns:").append(columns.toString());
+        return sb.toString();
+    }
+
     /* class */
     public static class Column {
         private String name = null;
@@ -78,6 +88,8 @@ public class MyData {
         private String sqlType = null;
         private String javaType = null;
         private int length = 0;
+        private boolean isAuto = false;
+        private boolean isWrite = true;
 
         private Column(Builder builder) {
             name = builder.name;
@@ -87,6 +99,8 @@ public class MyData {
             sqlType = builder.sqlType;
             javaType = builder.javaType;
             length = builder.length;
+            isAuto = builder.isAuto;
+            isWrite = builder.isWrite;
         }
 
         public static Builder createBuilder() {
@@ -101,6 +115,8 @@ public class MyData {
             private String sqlType = null;
             private String javaType = null;
             private int length = 0;
+            private boolean isAuto = false;
+            private boolean isWrite = true;
 
             private Builder() {
 
@@ -141,6 +157,16 @@ public class MyData {
                 return this;
             }
 
+            public Builder isAuto(boolean isAuto) {
+                this.isAuto = isAuto;
+                return this;
+            }
+
+            public Builder isWrite(boolean isWrite) {
+                this.isWrite = isWrite;
+                return this;
+            }
+
             public Column build() {
                 return new Column(this);
             }
@@ -172,6 +198,28 @@ public class MyData {
 
         public int getLength() {
             return length;
+        }
+
+        public boolean isAuto() {
+            return isAuto;
+        }
+
+        public boolean isWrite() {
+            return isWrite;
+        }
+
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("name:").append(name).append("||");
+            sb.append("value:").append(value).append("||");
+            sb.append("isKey:").append(isKey).append("||");
+            sb.append("isNull:").append(isNull).append("||");
+            sb.append("sqlType:").append(sqlType).append("||");
+            sb.append("javaType:").append(javaType).append("||");
+            sb.append("length:").append(length).append("||");
+            sb.append("isAuto:").append(isAuto).append("||");
+            sb.append("isWrite:").append(isWrite);
+            return sb.toString();
         }
     }
 }

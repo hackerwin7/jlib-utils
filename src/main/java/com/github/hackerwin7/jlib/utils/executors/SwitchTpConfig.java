@@ -10,6 +10,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreConnectionPNames;
@@ -103,7 +104,6 @@ public class SwitchTpConfig {
         jdata.put("key", jobId);
         jdata.put("value", StringEscapeUtils.escapeJson(value));
         jdata.put("model", "rpc");
-
 
         jdata.put("synchronous", true);
         jdata.put("erp", "fff");

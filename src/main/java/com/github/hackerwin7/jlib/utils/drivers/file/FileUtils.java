@@ -38,4 +38,48 @@ public class FileUtils {
         is.close();
         return rows;
     }
+
+    /**
+     * load the specified class loader
+     * @param fileName
+     * @param loader
+     * @return list string
+     * @throws Exception
+     */
+    public static List<String> file2List(String fileName, ClassLoader loader) throws Exception {
+        InputStream is = loader.getResourceAsStream(fileName);
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String line = null;
+        List<String> rows = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            if(!StringUtils.isBlank(line)) {
+                rows.add(line);
+            }
+        }
+        br.close();
+        is.close();
+        return rows;
+    }
+
+    /**
+     * load the specified class loader
+     * @param fileName
+     * @param loader
+     * @return list string
+     * @throws Exception
+     */
+    public static List<String> file2List(String fileName, InputStream stream) throws Exception {
+        InputStream is = stream;
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String line = null;
+        List<String> rows = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            if(!StringUtils.isBlank(line)) {
+                rows.add(line);
+            }
+        }
+        br.close();
+        is.close();
+        return rows;
+    }
 }

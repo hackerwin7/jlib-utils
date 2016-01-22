@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.drivers.mysql.client;
 
+import com.github.hackerwin7.jlib.utils.commons.CommonUtils;
 import com.github.hackerwin7.jlib.utils.drivers.mysql.conf.MysqlConf;
 import com.github.hackerwin7.jlib.utils.drivers.mysql.data.MyData;
 import com.github.hackerwin7.jlib.utils.drivers.queue.blocking.BlockingDataQueue;
@@ -9,6 +10,7 @@ import org.apache.log4j.Logger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,8 +20,12 @@ import java.util.List;
  * Desc: mysql jdbc client
  */
 public class MysqlClient {
+
     /*constants*/
     public static final int QUEUE_DEFAULT_SIZE = 10000;
+    public static final long RANDOM_LONG_RANGE = 999999999;
+    public static final int RANDOM_INT_RANGE = 9999;
+
 
     /*logger*/
     private static Logger logger = Logger.getLogger(MysqlClient.class);
@@ -54,10 +60,21 @@ public class MysqlClient {
      * @param sql
      * @throws Exception
      */
-    public void execute(String sql) throws Exception {
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.execute();
-        stmt.close();
+    public void execute(String sql) {
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement(sql);
+            stmt.execute();
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            if(stmt != null)
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    logger.error("error occurred when closing the statement, error = " + e.getMessage(), e);
+                }
+        }
     }
 
     /**
@@ -65,36 +82,128 @@ public class MysqlClient {
      * @param sqls
      * @throws Exception
      */
-    public void executeBatch(List<String> sqls) throws Exception {
-        conn.setAutoCommit(false);
-        Statement stmt = conn.createStatement();
-        for(int i = 0; i <= sqls.size() - 1; i++) {
-            int index = i + 1;
-            if(index % batchSize == 0) {
-                stmt.executeBatch();
-                conn.commit();
+    public void executeBatch(List<String> sqls) {
+        Statement stmt = null;
+        try {
+            conn.setAutoCommit(false);
+            stmt = conn.createStatement();
+            int index = 0;
+            for(String sql : sqls) {
+                index++;
+                stmt.addBatch(sql);
+                if(index % batchSize == 0) {
+                    logger.info("executed " + batchSize + " sqls......");
+                    stmt.executeBatch();
+                    conn.commit();
+                }
+            }
+            stmt.executeBatch();
+            conn.commit();
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            //close
+            try {
+                if(stmt != null)
+                    stmt.close();
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.error("error occurred when closing the batch statement, error = " + e.getMessage(), e);
             }
         }
-        stmt.executeBatch();
-        conn.commit();
-        //close
-        stmt.close();
-        conn.setAutoCommit(true);
+
     }
 
-//    /**
-//     * random insert with table name
-//     * @param tb
-//     * @param count
-//     * @throws Exception
-//     */
-//    public void rdInsert(String tb, int count) throws Exception {
-//        if(counts > batchSize) {
-//            rdInsertAsync(tb, count);
-//        } else {
-//            rdInsertSync(tb, count);
-//        }
-//    }
+    /**
+     * random insert with table name
+     * @param tb
+     * @param count
+     * @throws Exception
+     */
+    public void rdInsert(String tb, int count) throws Exception {
+        if(count > batchSize) {
+            rdInsertAsync(tb, count);
+        } else {
+            rdInsertSync(tb, count);
+        }
+    }
+
+    /**
+     * async insert
+     * @param tbName
+     * @param count
+     * @throws Exception
+     */
+    private void rdInsertAsync(String tbName, int count) throws Exception {
+        /* get table desc */
+        MyData desc = desc(tbName);
+        /* generate sql and execute */
+        List<String> sqlList = new ArrayList<>();
+        String sql = rdGenInsSql(desc);
+        for(int i = 1; i <= count; i++) {
+            sqlList.add(sql);
+        }
+        executeBatch(sqlList);
+    }
+
+    /**
+     * sync insert
+     * @throws Exception
+     */
+    private void rdInsertSync(String tbName, int count) throws Exception {
+        /* get table desc */
+        MyData desc = desc(tbName);
+        /* generate sql and execute */
+        for(int i = 1; i <= count; i++) {
+            String sql = rdGenInsSql(desc);
+            execute(sql);
+        }
+    }
+
+    /**
+     * generate sql by description data
+     * @param desc
+     * @return string sql
+     * @throws Exception
+     */
+    private String rdGenInsSql(MyData desc) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("insert into ").append(desc.getTbname()).append(" ");
+        List<MyData.Column> columns = desc.getColumnList();
+        List<String> names = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+        Random random = new Random();
+        for(MyData.Column column : columns) {
+            /* skip the auto_increment and not allowed written filed */
+            if(column.isAuto() || !column.isWrite())
+                continue;
+            names.add(column.getName());
+            String value = null;
+            switch (column.getJavaType()) {
+                case "java.lang.Long":
+                    value = String.valueOf(Math.abs(random.nextLong()) % RANDOM_LONG_RANGE);
+                    break;
+                case "java.lang.String":
+                    value = "\'" + CommonUtils.randomString() + "\'";
+                    break;
+                case "java.lang.Integer":
+                    value = String.valueOf(random.nextInt(RANDOM_INT_RANGE));
+                    break;
+                case "java.sql.Timestamp":
+                    value = "\'" +  String.valueOf(new Date(System.currentTimeMillis())) + "\'";
+                    break;
+                case "java.math.BigDecimal":
+                    value = String.valueOf(Math.abs(random.nextFloat()));
+                    break;
+                default:
+                    value = "\'" + CommonUtils.randomString() + "\'";
+            }
+            values.add(value);
+        }
+        sql.append("(").append(StringUtils.join(names, ",")).append(")").append(" values ");
+        sql.append("(").append(StringUtils.join(values, ",")).append(")");
+        return sql.toString();
+    }
 
     /**
      * query from sql , receive list MyData
@@ -157,11 +266,14 @@ public class MysqlClient {
         PreparedStatement stmt = conn.prepareStatement("select * from " + tbName + " limit 1");
         ResultSetMetaData rsd = stmt.executeQuery().getMetaData();
         MyData data = new MyData();
+        data.setTbname(tbName);
         for (int i = 1; i <= rsd.getColumnCount(); i++) {
             String jtype = rsd.getColumnClassName(i);
             String mtype = rsd.getColumnTypeName(i);
             int size = rsd.getColumnDisplaySize(i);
             String name = rsd.getColumnName(i);
+            boolean isAuto = rsd.isAutoIncrement(i);
+            boolean isWrite = rsd.isWritable(i);
             MyData.Column column = MyData.Column.createBuilder()
                     .name(name)
                     .value(null)
@@ -169,6 +281,8 @@ public class MysqlClient {
                     .sqlType(mtype)
                     .length(size)
                     .isNull(true)
+                    .isAuto(isAuto)
+                    .isWrite(isWrite)
                     .build();
             data.setColumn(column);
         }

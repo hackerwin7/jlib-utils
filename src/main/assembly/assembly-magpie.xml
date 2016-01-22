@@ -19,9 +19,6 @@
         <fileSet>
             <directory>${project.basedir}/target/classes/</directory>
             <outputDirectory>/</outputDirectory>
-            <excludes>
-                <exclude>/src/main/resources/job.list</exclude>
-            </excludes>
             <includes>
                 <include>/**/*.class</include>
                 <include>*.xml</include>
@@ -29,6 +26,7 @@
                 <include>*.properties</include>
                 <include>/**/*.properties</include>
                 <include>META-INF/**/*</include>
+                <include>**/*.list</include>
             </includes>
         </fileSet>
         <fileSet>

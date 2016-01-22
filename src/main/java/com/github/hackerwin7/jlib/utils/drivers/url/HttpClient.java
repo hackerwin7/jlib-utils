@@ -5,11 +5,14 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +71,8 @@ public class HttpClient {
             String val = entry.getValue();
             pairs.add(new BasicNameValuePair(key, val));
         }
-        request.setEntity(new UrlEncodedFormEntity(pairs, DEFAULT_CHARSET));
+        UrlEncodedFormEntity entity = new UrlEncodedFormEntity(pairs, DEFAULT_CHARSET);
+        request.setEntity(entity);
         HttpResponse response = client.execute(request);
         return EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET);
     }

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * common utils for jdk
@@ -30,5 +31,30 @@ public class CommonUtils {
             ss.add(String.valueOf(bytes[i]));
         }
         return StringUtils.join(ss, ",");
+    }
+
+    /**
+     * random generate string
+     * @param length
+     * @return string
+     */
+    public static String randomString(int length) {
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        int strLen = str.length();
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i <= length - 1; i++) {
+            sb.append(str.charAt(random.nextInt(strLen)));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * default random string
+     * @return
+     */
+    public static String randomString() {
+        Random random = new Random();
+        return randomString(random.nextInt(5) + 1);
     }
 }
