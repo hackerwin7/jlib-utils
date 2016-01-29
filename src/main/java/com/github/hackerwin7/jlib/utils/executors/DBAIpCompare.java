@@ -17,8 +17,8 @@ import java.util.Set;
 public class DBAIpCompare {
     public static void main(String[] args) throws Exception {
         DBAIpCompare dba = new DBAIpCompare();
-        //dba.mainProc();
-        dba.distinct();
+        dba.mainProc();
+        //dba.distinct();
     }
 
     public void mainProc() throws Exception {

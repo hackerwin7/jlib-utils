@@ -83,7 +83,7 @@ public class HBaseClient {
         if(!mutatorPool.containsKey(tbName)) {
             if(!existsTable(tbName))
                 createTable(tbName);
-            BufferedMutator mutator = connection.getBufferedMutator(TableName.valueOf(tbName));
+            BufferedMutator mutator = connection.getBufferedMutator(TableName.valueOf(tbName));//customize the mutator can use getBufferedMutator(BufferdMutatorParams para)
             mutatorPool.put(tbName, mutator);
         }
         return mutatorPool.get(tbName);

@@ -2,11 +2,13 @@ package com.github.hackerwin7.jlib.utils.drivers.file;
 
 import com.github.hackerwin7.jlib.utils.executors.TrainBdpConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.ho.yaml.Yaml;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -64,7 +66,7 @@ public class FileUtils {
     /**
      * load the specified class loader
      * @param fileName
-     * @param loader
+     * @param stream
      * @return list string
      * @throws Exception
      */
@@ -81,5 +83,17 @@ public class FileUtils {
         br.close();
         is.close();
         return rows;
+    }
+
+    /**
+     * read yaml file and return the value
+     * @param fileName
+     * @param key
+     * @return value string
+     * @throws Exception
+     */
+    public static String readYaml(String fileName, String key) throws Exception {
+        HashMap map = Yaml.loadType(FileUtils.class.getClassLoader().getResource(fileName).openStream(), HashMap.class);
+        return map.get(key).toString();
     }
 }

@@ -1,8 +1,6 @@
 package com.github.hackerwin7.jlib.utils.executors;
 
 import com.github.hackerwin7.jlib.utils.drivers.url.URLClient;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -11,12 +9,19 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
+import java.io.InputStreamReader;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +51,8 @@ public class SwitchTpConfig {
     public static final String KEY_FORMAT = ".jrdw.jd.com";
     public static final String KEY_FORMAT_TEST = KEY_FORMAT + "_test";
 
+    private static String hbaseJobId = "";
+
     private static int ordersNum = 0;
 
     public static void main(String[] args) throws Exception {
@@ -57,14 +64,14 @@ public class SwitchTpConfig {
             String pid = String.valueOf(Integer.valueOf(tid) + 1);
             String constrt = URLClient.getFromUrl(TrainBdpConfig.BDP_URL + tid);
             String constr = URLClient.getFromUrl(TrainBdpConfig.BDP_URL + pid);
-            JSONObject jconf = JSONObject.fromObject(constr);
-            JSONObject jconft = JSONObject.fromObject(constrt);
-            writeConf("tp-" + tid + KEY_FORMAT, switchConf(jconf, jconft).getJSONObject("data").toString());
-            getConf("tp-" + tid + KEY_FORMAT);
+            JSONObject jconf = new JSONObject(constr);
+            JSONObject jconft = new JSONObject(constrt);
+            writeConf("tp-" + tid + KEY_FORMAT, switchConf(jconf, jconft, tid).getJSONObject("data").toString());
+            getConf3("tp-" + tid + KEY_FORMAT);
             ordersNum++;
         }
     }
-    private static JSONObject switchConf(JSONObject old, JSONObject oldt) throws Exception {
+    private static JSONObject switchConf(JSONObject old, JSONObject oldt, String jobId) throws Exception {
         old.getJSONObject("data").put("source_host", oldt.getJSONObject("data").getString("source_host"));
         old.getJSONObject("data").put("source_charset", oldt.getJSONObject("data").getString("source_charset"));
         old.getJSONObject("data").put("source_password", oldt.getJSONObject("data").getString("source_password"));
@@ -82,8 +89,14 @@ public class SwitchTpConfig {
         old.getJSONObject("data").put("pool.size", "50");
         old.getJSONObject("data").put("retry.num", "2");
 
+        //jobId config
+        hbaseJobId = "tp-" + jobId + KEY_FORMAT;
+        old.getJSONObject("data").put("client.name", hbaseJobId);
+        old.getJSONObject("data").put("job_id", hbaseJobId);
+        old.getJSONObject("data").put("monitor_job", hbaseJobId);
+
         JSONArray jarr = old.getJSONObject("data").getJSONArray("db_tab_meta");
-        for(int i = 0; i <= jarr.size() - 1; i++) {
+        for(int i = 0; i <= jarr.length() - 1; i++) {
             JSONObject jdt = jarr.getJSONObject(i);
             String table = jdt.getString("tablename");
             jdt.put("htable", table.substring(0, table.indexOf("_")));
@@ -102,7 +115,8 @@ public class SwitchTpConfig {
         //data
         JSONObject jdata = new JSONObject();
         jdata.put("key", jobId);
-        jdata.put("value", StringEscapeUtils.escapeJson(value));
+        //jdata.put("value", StringEscapeUtils.escapeJson(value));
+        jdata.put("value", value);
         jdata.put("model", "rpc");
 
         jdata.put("synchronous", true);
@@ -116,6 +130,7 @@ public class SwitchTpConfig {
         valuePairs.add(new BasicNameValuePair("token", token));
         valuePairs.add(new BasicNameValuePair("time", time));
         valuePairs.add(new BasicNameValuePair("data", data));
+        System.out.println(data);
         UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(valuePairs, enc);
         post.setEntity(formEntity);
         HttpResponse response = httpClient.execute(post);
@@ -193,10 +208,47 @@ public class SwitchTpConfig {
         System.out.println(ret);
 
         //show config
-        JSONObject jret = JSONObject.fromObject(ret);
+        JSONObject jret = new JSONObject(ret);
         String origin = jret.getString("obj");
         String value = StringEscapeUtils.unescapeJson(origin);
-        System.out.println(JSONObject.fromObject(value));
+        System.out.println(new JSONObject(value));
+    }
+    private static void getConf3(String jobId) throws Exception {
+        String enc = "UTF-8";
+        String appid = "bdp.jd.com";
+        appid = URLEncoder.encode(appid, enc);
+        String token = "RQLMPXULF3EG23CPZL3U257B7Y";
+        token = URLEncoder.encode(token, enc);
+        String addr = "http://atom.bdp.jd.local/api/site/get";
+        String time = String.valueOf(System.currentTimeMillis());
+        //data
+        JSONObject jdata = new JSONObject();
+        jdata.put("model", "rpc");
+        jdata.put("key", jobId);
+        jdata.put("erp", "fff");
+        String data = jdata.toString();
+        //post url
+        String url = addr;
+        HttpPost post = new HttpPost(url);
+        List<NameValuePair> valuePairs = new ArrayList<>();
+        valuePairs.add(new BasicNameValuePair("appId", appid));
+        valuePairs.add(new BasicNameValuePair("token", token));
+        valuePairs.add(new BasicNameValuePair("time", time));
+        valuePairs.add(new BasicNameValuePair("data", data));
+        UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(valuePairs, enc);
+        post.setEntity(formEntity);
+        HttpResponse response = httpClient.execute(post);
+        Charset charset = ContentType.getOrDefault(response.getEntity()).getCharset();
+        System.out.println(response.getEntity());
+        System.out.println(response.getEntity().getContent());
+        //String ret = new JSONObject(new JSONTokener(new InputStreamReader(response.getEntity().getContent(), charset == null ? Charset.forName("UTF-8") : charset))).toString();
+        String ret = EntityUtils.toString(response.getEntity(), enc);
+        System.out.println("string = " + ret);
+        String objStr = new JSONObject(ret).getString("obj");
+        System.out.println(objStr);
+        String objOrigin = StringEscapeUtils.unescapeJson(objStr);
+        JSONObject jobj = new JSONObject(objOrigin);
+        System.out.println(jobj.toString());
     }
 
     public String switchJob(String jobId) throws Exception {
@@ -205,9 +257,9 @@ public class SwitchTpConfig {
         String pid = tid.replaceFirst("2002", "2102");
         String tconfStr = URLClient.getFromUrl(TrainBdpConfig.BDP_URL + tid);
         String pconfStr = URLClient.getFromUrl(TrainBdpConfig.BDP_URL + pid);
-        JSONObject tjson = JSONObject.fromObject(tconfStr);
-        JSONObject pjson = JSONObject.fromObject(pconfStr);
-        JSONObject tpjson = switchConf(pjson, tjson);
+        JSONObject tjson = new JSONObject(tconfStr);
+        JSONObject pjson = new JSONObject(pconfStr);
+        JSONObject tpjson = switchConf(pjson, tjson, tid);
         return tpjson.toString();
     }
 }
