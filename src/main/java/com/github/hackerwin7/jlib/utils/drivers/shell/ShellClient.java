@@ -32,7 +32,7 @@ public class ShellClient {
                 "-c",
                 cmd
         };
-        Process proc = Runtime.getRuntime().exec(cmdArr);//single cmd string is invalid in some cases
+        Process proc = Runtime.getRuntime().exec(cmdArr);//single cmd string is insvalid in some cases
         proc.waitFor();
         BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         String line = "";
