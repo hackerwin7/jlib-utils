@@ -3,6 +3,7 @@ package com.github.hackerwin7.jlib.utils.executors;
 import com.github.hackerwin7.jlib.utils.drivers.file.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public class StringGenerator {
     public static void main(String[] args) throws Exception {
-        proc3();
+        proc4();
     }
 
     public static void proc1() {
@@ -41,6 +42,13 @@ public class StringGenerator {
         for(String type : types) {
             System.out.println("case " + type + ":");
             System.out.println("    return \"" + type + "\";");
+        }
+    }
+
+    public static void proc4() throws Exception {
+        List<String> jobIds = FileUtils.file2List("job.list");
+        for(String jobId : jobIds) {
+            System.out.println("tp-" + jobId + SwitchTpConfig.KEY_FORMAT);
         }
     }
 }

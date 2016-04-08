@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.executors;
 
+import com.github.hackerwin7.jlib.utils.drivers.file.FileUtils;
 import com.github.hackerwin7.jlib.utils.drivers.url.URLClient;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,10 +56,15 @@ public class SwitchTpConfig {
 
     private static int ordersNum = 0;
 
+    // jdorders,ocs,product_pop,product_book_self_other,customer
+    private static String hbaseMidName = "product_pop";
+
     public static void main(String[] args) throws Exception {
-        String instr = "1000174,1000176,1000178,1000180,1000182,1000184,1000186,1000188,1000190,1000192,1000194,1000196,1000198,1000200,1000202,1000204,1000206,1000208,1000210,1000212";
-        //String instr = "1000000";
-        String[] strArr = StringUtils.split(instr, ",");
+        //jdorders
+        //String instr = "1000174,1000176,1000178,1000180,1000182,1000184,1000186,1000188,1000190,1000192,1000194,1000196,1000198,1000200,1000202,1000204,1000206,1000208,1000210,1000212";
+        //String[] strArr = StringUtils.split(instr, ",");
+
+        List<String> strArr = FileUtils.file2List("job.list");
         for(String sid : strArr) {
             String tid = sid;
             String pid = String.valueOf(Integer.valueOf(tid) + 1);
@@ -76,9 +82,9 @@ public class SwitchTpConfig {
         old.getJSONObject("data").put("source_charset", oldt.getJSONObject("data").getString("source_charset"));
         old.getJSONObject("data").put("source_password", oldt.getJSONObject("data").getString("source_password"));
         old.getJSONObject("data").put("source_port", oldt.getJSONObject("data").getString("source_port"));
-        old.getJSONObject("data").put("source_slaveId", Long.valueOf(oldt.getJSONObject("data").getString("source_slaveId") + "127"));
+        old.getJSONObject("data").put("source_slaveId", Long.valueOf(oldt.getJSONObject("data").getString("source_slaveId") + "746"));
         old.getJSONObject("data").put("source_user", oldt.getJSONObject("data").getString("source_user"));
-        old.getJSONObject("data").put("hbase_tablename", "rbdm:" + "jdorders_" + ordersNum);
+        old.getJSONObject("data").put("hbase_tablename", "rbdm:" + hbaseMidName + "_" + ordersNum);
         old.getJSONObject("data").put("target.quorum", "172.19.186.89,172.19.186.90,172.19.186.91,172.19.186.93,172.19.186.93");
         //old.getJSONObject("data").put("target.quorum", "172.17.36.54,172.17.36.55,172.17.36.56");
         old.getJSONObject("data").put("target.clientport", "2181");
@@ -99,9 +105,16 @@ public class SwitchTpConfig {
         for(int i = 0; i <= jarr.length() - 1; i++) {
             JSONObject jdt = jarr.getJSONObject(i);
             String table = jdt.getString("tablename");
-            jdt.put("htable", table.substring(0, table.indexOf("_")));
+            jdt.put("htable", getLogicName(jdt.getString("dbname")) + "_" + getLogicName(jdt.getString("tablename"))); //dbname.eraseLast "_" and number + tablename.eraseLast "_" and number
         }
         return old;
+    }
+    public static String getLogicName(String name) {
+        String numStr = StringUtils.substringAfterLast(name, "_");
+        if(StringUtils.isNumeric(numStr))
+            return StringUtils.substringBeforeLast(name, "_");
+        else
+            return name;
     }
     private static void writeConf(String jobId, String value) throws Exception {
         //value make

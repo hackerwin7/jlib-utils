@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.drivers.shell;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -48,13 +49,17 @@ public class ShellClient {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        //String cmd = "ssh magpie@172.22.178.85 \"mysql -h172.17.36.48 -ujd_data -pjd_data -e \'show master status;\'\"";
+        String cmd = "ssh magpie@172.22.178.176 \"mysql -h172.19.148.68 -ucanal -P3358 -pFdHTbSjheGVNQwEDNSXXOO_D2efdsdF -e \'show master status;\'\"";
         //String cmd = "ssh magpie@172.22.178.85 \"ssh 172.22.178.176 \"mysql -h10.191.66.89 -umagpie -pFdHTbSjheGVNQwEDNSXXOO_D2efdsdF -P3358 -e \"show variables like '%log_%'; show master status;\"\"\"";
         //String cmd = "ssh magpie@172.22.178.85 \"ssh 172.22.178.176 \"mysql -h10.191.66.89 -umagpie -pFdHTbSjheGVNQwEDNSXXOO_D2efdsdF -P3358 -e \'show master status;\'\"\"";
-        String cmd = "ssh magpie@172.22.178.85 \"magpie-client info -list assignments | grep mysql-tracker | awk -F \" \" \"print {$5}\"\"";
+        //String cmd = "ssh magpie@172.22.178.85 \"magpie-client info -list assignments | grep mysql-tracker | awk -F \" \" \"print {$5}\"\"";
         List<String> rets = execute(cmd);
         for(String ret : rets) {
             System.out.println(ret);
+            String[] strArr = StringUtils.split(ret, "\t");
+            for(String str : strArr) {
+                System.out.println(str);
+            }
         }
     }
 }
