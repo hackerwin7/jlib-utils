@@ -1,8 +1,10 @@
 package com.github.hackerwin7.jlib.utils.test.io.test;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.RandomAccessFile;
 
 /**
@@ -68,7 +70,7 @@ public class RandomAccessTest {
      */
     public static void bytes2File(byte[] bytes, File file, long from, long to) throws Exception {
         //driver
-        RandomAccessFile raf = new RandomAccessFile(file, "rwd");
+        RandomAccessFile raf = new RandomAccessFile(file, "rw"); // rwd or rws is too slowly to transfer the chunk
         //args
         long sum = bytes.length;
         if(from > 0)
@@ -100,7 +102,17 @@ public class RandomAccessTest {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        test1();
+        File file = new File("src/test/resources/jlib-utils-1.0-SNAPSHOT-standalone.jar");
+        File wfile = new File("src/test/resources/jlib-utils-1.0-SNAPSHOT-standalone-resume.jar");
+        byte[] parrs = file2Bytes(file, 0, 1992);
+        bytes2File(parrs, wfile, 0, 0);
+        LOG.info("sleeping ...");
+        Thread.sleep(3000);
+        byte[] rarrs = file2Bytes(file, 1992, 0);
+        bytes2File(rarrs, wfile, 1992, 0);
+        LOG.info("md5 =>");
+        LOG.info(DigestUtils.md5Hex(new FileInputStream(file)));
+        LOG.info(DigestUtils.md5Hex(new FileInputStream(wfile)));
     }
 
     public static void test1() throws Exception {
