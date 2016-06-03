@@ -63,7 +63,7 @@ public class BytesStreamTest {
                 if(left < TRANS_LEN_UNIT)
                     read = left;
             }
-            //close io
+            //close trans
             fis.close();
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
