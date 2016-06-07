@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.test.thrift.client;
 
+import com.github.hackerwin7.jlib.utils.test.commons.CommonUtils;
 import com.github.hackerwin7.jlib.utils.test.thrift.gen.trans.TFileChunk;
 import com.github.hackerwin7.jlib.utils.test.thrift.gen.trans.TFileInfo;
 import com.github.hackerwin7.jlib.utils.test.thrift.gen.trans.TFileService;
@@ -10,8 +11,6 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,11 +25,16 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class TTransClient {
 
+    /* constants */
+    public static final String JAR_PATH = "src/test/resources/";
+
     private static final Logger LOG = Logger.getLogger(TTransClient.class);
 
     private static BlockingQueue<TFileChunk> queue = new LinkedBlockingQueue<>(1000);
 
     private static Thread writeTh = null;
+
+    private TFileInfo info = null;
 
     public static void main(String[] args) throws Exception {
         TTransport transport = new TSocket("localhost", 9090);
@@ -39,48 +43,70 @@ public class TTransClient {
         TProtocol protocol = new TBinaryProtocol(transport);
         TFileService.Client client = new TFileService.Client(protocol);
 
-        perform(client);
+        TTransClient tClient = new TTransClient();
+        tClient.perform(client);
 
         transport.close();
     }
 
-    private static void perform(TFileService.Client client) throws Exception {
+    private void perform(TFileService.Client client) throws Exception {
         int fetch = 0, start = 0;
 
-        TFileInfo info = client.open("src/test/resources/ip.list", start);
+        info = client.open("ip.list", start);
+
+        // debug
+        TFileChunk tChunk = client.getTChunk();
+        byte[] cbytes = tChunk.getBytes();
+
+        System.out.println(new String(cbytes));
+        System.out.println(tChunk.name);
 
         writing();
 
         while (fetch < info.length) {
             TFileChunk chunk = client.getChunk();
-            queue.put(chunk);
-            fetch += chunk.length;
+            if(chunk != null) {
+                queue.put(chunk);
+                fetch += chunk.length;
+            }
         }
+
+        checking();
 
         client.close();
     }
 
-    private static void writing() {
+    private void writing() throws Exception {
         writeTh = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     boolean takeAll = false;
-                    RandomAccessFile raf = new RandomAccessFile(new File("src/test/resources/ip.thrift"), "rw");
+                    RandomAccessFile raf = new RandomAccessFile(new File(JAR_PATH + "ip.thrift"), "rw");
+                    long write = 0;
 
                     //writing
                     while (!takeAll) {
                         TFileChunk chunk = queue.take();
-                        byte[] bytes = new byte[chunk.bytes.remaining()];
-                        chunk.bytes.get(bytes);
-
+                        byte[] wbytes = chunk.getBytes();
+                        raf.write(wbytes, 0, (int)chunk.length);
+                        write += chunk.length;
+                        if(write == info.length)
+                            takeAll = true; //all chunks haven been taken
                     }
 
                     raf.close();
-                } catch (IOException | InterruptedException e) {
+                } catch (Exception e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
-        })
+        });
+        writeTh.start();
+    }
+
+    private void checking() throws Exception {
+        writeTh.join();
+        System.out.println("src: " + info.md5);
+        System.out.println("des: " + CommonUtils.md5Hex(JAR_PATH + "ip.thrift"));
     }
 }

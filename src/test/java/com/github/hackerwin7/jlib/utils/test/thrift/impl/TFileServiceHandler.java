@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.test.thrift.impl;
 
+import com.github.hackerwin7.jlib.utils.test.commons.CommonUtils;
 import com.github.hackerwin7.jlib.utils.test.thrift.gen.trans.TFileChunk;
 import com.github.hackerwin7.jlib.utils.test.thrift.gen.trans.TFileInfo;
 import com.github.hackerwin7.jlib.utils.test.thrift.gen.trans.TFileService;
@@ -35,11 +36,16 @@ public class TFileServiceHandler implements TFileService.Iface {
     private long startOffset = 0L;
     private TFileInfo info = null;
 
+    //debug
+    private RandomAccessFile traf = null;
+    private String tname = null;
+
     /* read thread */
     private Thread readTh = null;
 
     /* queue */
-    private BlockingQueue<TFileChunk> queue = new LinkedBlockingQueue<>(1000);;
+    private BlockingQueue<TFileChunk> queue = new LinkedBlockingQueue<>(1000);
+    private BlockingQueue<TFileChunk> tqueue = new LinkedBlockingQueue<>(1000);
 
     /* take signal */
     private boolean havaTakeAll = false;
@@ -58,16 +64,35 @@ public class TFileServiceHandler implements TFileService.Iface {
         info = null;
         try {
             raf = new RandomAccessFile(file, "r");
+
+            //debug
+            traf = new RandomAccessFile(new File(JAR_PATH + name + "_test"), "rw");
+            tname = JAR_PATH + name + "_test";
+
             info = new TFileInfo();
             info.name = name;
             info.length = file.length();
             info.ts = System.currentTimeMillis();
-        } catch (IOException e) {
+            info.md5 = CommonUtils.md5Hex(JAR_PATH + name);
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
 
         /* start reading */
         reading();
+
+
+        //debug
+        String str = "hello world!";
+        byte[] bytes = str.getBytes();
+        TFileChunk chunk = new TFileChunk();
+        chunk.setBytes(bytes);
+        chunk.name = "world!";
+        try {
+            tqueue.put(chunk);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
 
         return info;
     }
@@ -84,29 +109,44 @@ public class TFileServiceHandler implements TFileService.Iface {
                 int read = transConstants.CHUNK_UNIT;
                 if(left < read)
                     read = (int)left;
-                byte[] bytes = new byte[transConstants.CHUNK_UNIT];
                 //start reading
                 try {
-                    while (ind <= info.length - 1 && raf.read(bytes, 0, read) != -1) {
+
+                    while (ind <= info.length - 1) {
+
+                        //read
+                        byte[] bytes = new byte[read]; // byte length must be accurate
+                        raf.read(bytes, 0, read);
+
                         // make chunk
                         TFileChunk chunk = new TFileChunk();
-                        chunk.bytes = ByteBuffer.wrap(bytes);
-                        chunk.name = info.name;
-                        chunk.length = read;
-                        chunk.offset = ind;
+                        chunk.setBytes(bytes);
+                        chunk.setName(info.name);
+                        chunk.setLength(read);
+                        chunk.setOffset(ind);
                         // queue
                         queue.put(chunk);
+
+                        //debug
+//                        byte[] wbytes = new byte[chunk.bytes.remaining()];
+//                        chunk.bytes.get(wbytes);
+//                        traf.write(wbytes, 0, (int)chunk.length);
+
                         // index length adjust
                         ind += read;
                         left = info.length - ind;
                         if(left < read)
                             read = (int)left;
                     }
-                } catch (IOException | InterruptedException e) {
+
+                    // debug
+                    //System.out.println("dut: " + CommonUtils.md5Hex(tname));
+                } catch (Exception e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
         });
+        readTh.start();
     }
 
     /**
@@ -119,12 +159,32 @@ public class TFileServiceHandler implements TFileService.Iface {
         try {
             if(queue.isEmpty())
                 return null;
-            else
-                return queue.take();
-        } catch (InterruptedException e) {
+            else {
+                TFileChunk chunk = queue.take();
+
+//                //debug
+//                byte[] wbytes = new byte[chunk.bytes.remaining()];
+//                chunk.bytes.get(wbytes);
+//                traf.write(wbytes, 0, (int)chunk.length);   // ByteBuffer.get(bytes) may change the ByteBuffer itself content,
+                                                                // ByteBuffer.array() not change itself
+
+                return chunk;
+            }
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new TException("queue take error!");
         }
+    }
+
+    @Override
+    public TFileChunk getTChunk() throws TException {
+        TFileChunk chunk = null;
+        try {
+            chunk = tqueue.take();
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return chunk;
     }
 
     /**
@@ -135,8 +195,15 @@ public class TFileServiceHandler implements TFileService.Iface {
     public void close() throws TException {
         if(raf != null) {
             try {
+
+                //debug
+//                System.out.println("dut: " + CommonUtils.md5Hex(tname));
+
                 raf.close();
-            } catch (IOException e) {
+
+                //debug
+                traf.close();
+            } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
         }

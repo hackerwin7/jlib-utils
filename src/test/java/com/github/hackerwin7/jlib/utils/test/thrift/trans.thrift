@@ -18,8 +18,8 @@ struct TFileInfo {
     2: i64 length,
     3: string suffix,
     4: string t_from,
-    5: i64 ts
-    // md5 needed
+    5: i64 ts,
+    6: string md5
 }
 
 /**
@@ -49,6 +49,10 @@ service TFileService {
     * get continue chunks of file
     */
     TFileChunk getChunk(),
+
+
+    /* test byte[] */
+    TFileChunk getTChunk(),
 
     /**
     * close connection

@@ -1,7 +1,9 @@
 package com.github.hackerwin7.jlib.utils.test.commons;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -56,5 +58,29 @@ public class CommonUtils {
     public static String randomString() {
         Random random = new Random();
         return randomString(random.nextInt(5) + 1);
+    }
+
+    /**
+     * get md5 hex string
+     * @param path
+     * @return md5
+     * @throws Exception
+     */
+    public static String md5Hex(String path) throws Exception {
+        File file = new File(path);
+        FileInputStream fis = new FileInputStream(file);
+        String md5 = DigestUtils.md5Hex(fis);
+        fis.close();
+        return md5;
+    }
+
+    /**
+     * by input stream
+     * @param fis
+     * @return md5
+     * @throws Exception
+     */
+    public static String md5Hex(FileInputStream fis) throws Exception {
+        return DigestUtils.md5Hex(fis);
     }
 }
