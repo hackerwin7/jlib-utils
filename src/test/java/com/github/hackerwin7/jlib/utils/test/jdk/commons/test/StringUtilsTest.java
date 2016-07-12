@@ -21,5 +21,11 @@ public class StringUtilsTest {
         strings.add("4444");
         strings.add("55555");
         System.out.println(StringUtils.join(strings, ","));
+
+        String path = "/root/path/ins/";
+        String[] arr = StringUtils.split(path, "/");
+        for(String ar : arr) {
+            System.out.println(ar);
+        }
     }
 }

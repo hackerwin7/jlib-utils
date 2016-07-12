@@ -9,9 +9,7 @@ import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -48,7 +46,7 @@ public class TFileServiceHandler implements TFileService.Iface {
     private BlockingQueue<TFileChunk> tqueue = new LinkedBlockingQueue<>(1000);
 
     /* take signal */
-    private boolean havaTakeAll = false;
+    private boolean haveTakeAll = false;
 
     /**
      * open conn to the file

@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.test.drivers.zk;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.*;
 
@@ -53,13 +54,61 @@ public class ZkClient {
     }
 
     /**
+     * recursively check
+     * @param path
+     * @return bool
+     * @throws Exception
+     */
+    public boolean existsR(String path) throws Exception {
+        String[] items = StringUtils.split(path, "/");
+        StringBuilder rec = new StringBuilder();
+        for(String item : items) {
+            rec.append("/").append(item);
+            if(!exists(rec.toString()))
+                return false;
+        }
+        return true;
+    }
+
+    /**
      * create the path and data
      * @param path
      * @param data
      * @throws Exception
      */
     public void create(String path, String data) throws Exception {
+        if(data == null)
+            data = "";
         zk.create(path, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    }
+
+    /**
+     * reload func
+     * @param path
+     * @param data
+     * @throws Exception
+     */
+    public void create(String path, String data, CreateMode mode) throws Exception {
+        if(data == null)
+            data = "";
+        zk.create(path, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, mode);
+    }
+
+    /**
+     * recursively create
+     * @param path
+     * @param data
+     * @throws Exception
+     */
+    public void createR(String path, String data) throws Exception {
+        String[] items = StringUtils.split(path, "/");
+        StringBuilder rec = new StringBuilder();
+        for(String item : items) {
+            rec.append("/").append(item);
+            if(!exists(rec.toString()))
+                create(rec.toString(), null);
+        }
+        set(path, data);
     }
 
     /**
@@ -70,6 +119,16 @@ public class ZkClient {
      */
     public void set(String path, String data) throws Exception {
         zk.setData(path, data.getBytes(), -1);
+    }
+
+    /**
+     * set recursively the process same as createR
+     * @param path
+     * @param data
+     * @throws Exception
+     */
+    public void setR(String path, String data) throws Exception {
+        createR(path, data);
     }
 
     /**
