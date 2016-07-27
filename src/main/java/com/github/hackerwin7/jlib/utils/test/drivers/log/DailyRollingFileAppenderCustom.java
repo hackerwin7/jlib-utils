@@ -5,10 +5,7 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.Serializable;
+import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -62,7 +59,38 @@ public class DailyRollingFileAppenderCustom extends FileAppender {
         }
     }
 
-    private List<ModifiedTimeSortableFile> getAllFiles()
+    private List<ModifiedTimeSortableFile> getAllFiles() {
+        List<ModifiedTimeSortableFile> files = new ArrayList<>();
+        FilenameFilter filter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                String directoryName = dir.getPath();
+                LogLog.debug("directory name: " + directoryName);
+                File file = new File(fileName);
+                String parentDirectory = file.getParent();
+                if(parentDirectory != null) {
+                    String localFile = fileName.substring(directoryName.length());
+                    return name.startsWith(localFile);
+                }
+                return name.startsWith(fileName);
+            }
+        };
+        File file = new File(fileName);
+        String parentDirectory = file.getParent();
+        if(file.exists()) {
+            if(file.getParent() == null) {
+                String absolutePath = file.getAbsolutePath();
+                parentDirectory = absolutePath.substring(0, absolutePath.lastIndexOf(fileName));
+            }
+        }
+        File dir = new File(parentDirectory);
+        String[] names = dir.list(filter);
+
+        for(String single : names) {
+            files.add(new ModifiedTimeSortableFile(dir + System.getProperty("file.separator") + single));
+        }
+        return files;
+    }
 
     /* end custom DailyRollingFileAppender */
 
@@ -226,6 +254,22 @@ public class DailyRollingFileAppenderCustom extends FileAppender {
      Rollover the current file to a new file.
      */
     void rollOver() throws IOException {
+
+        /* custom sort with max index rolling */
+        List<ModifiedTimeSortableFile> files = getAllFiles();
+        Collections.sort(files);
+        if(files.size() >= maxBackupIndex) {
+            int index = 0;
+            int diff = files.size() - maxBackupIndex + 1;
+            for(ModifiedTimeSortableFile file : files) {
+                if(index >= diff)
+                    break;
+                file.delete();
+                index++;
+            }
+        }
+        /* custom sort with max index rolling */
+
 
     /* Compute filename, but only if datePattern is specified */
         if (datePattern == null) {
