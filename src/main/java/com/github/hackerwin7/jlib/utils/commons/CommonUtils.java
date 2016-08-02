@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.commons;
 
+import com.github.hackerwin7.jlib.utils.drivers.algorithm.md5.util.MD5;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -75,6 +76,16 @@ public class CommonUtils {
     }
 
     /**
+     * fast md5 lib, but may not faster than the jdk (7, 8)
+     * @param path
+     * @return md5 hash hex
+     * @throws Exception
+     */
+    public static String md5HexFast(String path) throws Exception {
+        return MD5.asHex(MD5.getHash(new File(path)));
+    }
+
+    /**
      * by input stream
      * @param fis
      * @return md5
@@ -82,5 +93,19 @@ public class CommonUtils {
      */
     public static String md5Hex(FileInputStream fis) throws Exception {
         return DigestUtils.md5Hex(fis);
+    }
+
+    /**
+     * sha256 interface to call
+     * @param path
+     * @return sha hex string
+     * @throws Exception
+     */
+    public static String sha256Hex(String path) throws Exception {
+        File file = new File(path);
+        FileInputStream fis = new FileInputStream(file);
+        String sha = DigestUtils.sha256Hex(fis);
+        fis.close();
+        return sha;
     }
 }
