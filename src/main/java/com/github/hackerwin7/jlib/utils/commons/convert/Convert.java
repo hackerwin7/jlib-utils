@@ -10,8 +10,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -23,8 +22,11 @@ import java.util.*;
  */
 public class Convert {
 
-    /*logger*/
+    /* logger */
     private static Logger logger = Logger.getLogger(Convert.class);
+
+    /* constans */
+    public static final int READ_BUFFER_UNIT = 2048;
 
     /**
      * json convert to map using ObjectMapper
@@ -122,5 +124,50 @@ public class Convert {
         }
         sb.append(StringUtils.join(nums, ","));
         return sb.toString();
+    }
+
+    /**
+     * input stream to string
+     * @param is
+     * @return string
+     */
+    public static String stream2String(InputStream is) {
+        char[] buffer = new char[READ_BUFFER_UNIT];
+        StringBuilder sb = new StringBuilder();
+        try (Reader reader = new InputStreamReader(is, "UTF-8")) {
+            while (true) {
+                int readSize = reader.read(buffer, 0, buffer.length);
+                if(readSize < 0)
+                    break;
+                sb.append(buffer, 0, readSize);
+                buffer = new char[READ_BUFFER_UNIT]; // key note: new storage for next reading
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * start a thread to asynchronously convert the strea to stream builder
+     * @param is
+     * @param sb
+     * @return a alive processing thread
+     */
+    public static Thread stream2StringBuilderAsync(final InputStream is, final StringBuilder sb) {
+        Thread proc = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                sb.append(stream2String(is));
+            }
+        });
+        proc.start();
+        return proc;
     }
 }
