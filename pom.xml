@@ -30,7 +30,7 @@
 
     <groupId>com.github.hackerwin7</groupId>
     <artifactId>jlib-utils</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 
     <dependencies>
         <dependency>
@@ -88,11 +88,6 @@
             <groupId>org.apache.thrift</groupId>
             <artifactId>libthrift</artifactId>
             <version>0.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.twitter.heron</groupId>
-            <artifactId>heron-storm</artifactId>
-            <version>0.14.2</version>
         </dependency>
     </dependencies>
 
@@ -181,7 +176,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <skip>true</skip>
+                    <skip>false</skip>
                 </configuration>
             </plugin>
         </plugins>
