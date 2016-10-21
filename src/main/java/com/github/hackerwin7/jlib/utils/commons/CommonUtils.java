@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,5 +108,21 @@ public class CommonUtils {
         String sha = DigestUtils.sha256Hex(fis);
         fis.close();
         return sha;
+    }
+
+    /**
+     * check the link name exists in specific directory
+     * @param linkName
+     * @param homeDir
+     * @return true / false
+     */
+    public static boolean islink(String linkName, File homeDir) throws IOException {
+        File[] files = homeDir.listFiles();
+        for(File file : files) {
+            if(StringUtils.equals(linkName, file.getName()) &&
+                    !StringUtils.equals(file.getAbsolutePath(), file.getCanonicalPath())) // note the sequence
+                return true;
+        }
+        return false;
     }
 }

@@ -1,10 +1,12 @@
 package com.github.hackerwin7.jlib.utils.utils;
 
+import com.github.hackerwin7.jlib.utils.drivers.shell.ShellCommand;
 import com.github.hackerwin7.jlib.utils.drivers.shell.ShellUtilsProc;
-import com.sun.xml.txw2.output.SaxSerializer;
+import org.apache.commons.exec.ExecuteStreamHandler;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +19,26 @@ import java.util.List;
  * Tips:
  */
 public class ShellTest {
+
+    private final File workingDir = new File("/home/fff/Tmp");
+
     public static void main(String[] args) throws Exception {
+
+        ShellTest st = new ShellTest();
+
 //        String cmd = "top -b -n 1";
 //        List<String> rets =  ShellClient.execute(cmd);
 //        System.out.println(rets);
+
 //        pbexec();
-        ShellTest st = new ShellTest();
-        st.tar();
+
+//        st.tar();
+
+
+//        st.env();
+        st.ln();
+        st.unln();
+        st.islnT();
     }
 
     private static void pbexec() throws Exception {
@@ -61,5 +76,38 @@ public class ShellTest {
         ShellUtilsProc.runProcSync(cmds, stdout, stderr);
         System.out.println("out:\n" + stdout.toString());
         System.out.println("err:\n" + stderr.toString());
+    }
+
+    public void ln() throws IOException {
+        ShellCommand.exec(workingDir, "ln", "-s", "zookeeper-3.4.8", "zookeeper");
+    }
+
+    public void unln() throws IOException {
+        ShellCommand.exec(workingDir, "unlink", "zookeeper");
+    }
+
+    public void env() throws IOException {
+        System.out.println(System.getenv());
+    }
+
+    public boolean isLink(String name) throws IOException {
+//        OutputStream out = new ByteArrayOutputStream();
+//        ExecuteStreamHandler streamHandler = new PumpStreamHandler(out);
+//        ShellCommand.exec(streamHandler, workingDir, "ls", "-la");
+//        String outs = out.toString();
+        File[] files = workingDir.listFiles();
+        for(File file : files) {
+            if(StringUtils.equals(name, file.getName()) && !StringUtils.equals(file.getAbsolutePath(), file.getCanonicalPath())) // sequence is important
+                return true;
+        }
+        return false;
+    }
+
+    public void islnT() {
+        try {
+            System.out.println(isLink("zookeeper"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
