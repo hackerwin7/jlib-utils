@@ -1,8 +1,8 @@
 package com.github.hackerwin7.jlib.utils.metrics;
 
 import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 
 import java.util.concurrent.TimeUnit;
@@ -22,24 +22,31 @@ public class MetricsTest {
 
     public static void main(String[] args) {
         MetricsTest mt = new MetricsTest();
-        mt.getStartedTest1();
+        mt.jmxReporterTest();
     }
 
     public void getStartedTest() {
         startReport();
         Meter requests = metrics.meter("requests");
         requests.mark();
-        wait5Seconds();
+        waitSeconds();
     }
 
     public void getStartedTest1() {
         startReport();
         Meter requests = metrics.meter("requests");
-        for(int i = 1; i <= 30; i++) {
-//            Meter requests = metrics.meter("requests");
-            requests.mark();
+        requests.mark();
+        waitSeconds();
+    }
+
+    public void jmxReporterTest() {
+        startJmxReporter();
+        Meter requests = metrics.meter("requests");
+        requests.mark();
+        while (true) {
             try {
-                Thread.sleep(500);
+                Thread.sleep(1000);
+                System.out.println("reporting to jmx......");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -54,9 +61,22 @@ public class MetricsTest {
         reporter.start(1, TimeUnit.SECONDS);
     }
 
-    private void wait5Seconds() {
+    private void startJmxReporter() {
+        JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
+        reporter.start();
+    }
+
+    private void waitSeconds() {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void waitSeconds(int sec) {
+        try {
+            Thread.sleep(sec * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
