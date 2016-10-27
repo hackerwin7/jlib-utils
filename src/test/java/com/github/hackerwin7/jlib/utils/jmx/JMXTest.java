@@ -1,5 +1,7 @@
 package com.github.hackerwin7.jlib.utils.jmx;
 
+import com.github.hackerwin7.jlib.utils.drivers.jmx.JMXClient;
+
 import javax.management.*;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -16,7 +18,7 @@ import java.io.IOException;
 public class JMXTest {
     public static void main(String[] args) {
         JMXTest jt = new JMXTest();
-        jt.readTest();
+        jt.JMXClientGaugeTest();
     }
 
     public void readTest() {
@@ -35,5 +37,18 @@ public class JMXTest {
             e.printStackTrace();
         }
 
+    }
+
+    public void JMXClientTest() {
+        JMXClient jmx = new JMXClient(null, 9999);
+        Long count = (Long) jmx.getAttribute("metrics:name=requests", "Count");
+        Double mean = (Double) jmx.getAttribute("metrics:name=requests", "MeanRate");
+        System.out.println(count + "\n" + mean);
+    }
+
+    public void JMXClientGaugeTest() {
+        JMXClient jmx = new JMXClient(null, 9999);
+        Boolean health = (Boolean) jmx.getAttribute("metrics:name=com.github.hackerwin7.jlib.utils.metrics.MetricsTest.gauge.test", "Value");
+        System.out.println(health);
     }
 }

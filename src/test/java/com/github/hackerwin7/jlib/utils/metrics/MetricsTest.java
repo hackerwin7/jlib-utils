@@ -1,9 +1,7 @@
 package com.github.hackerwin7.jlib.utils.metrics;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.JmxReporter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.*;
+import com.codahale.metrics.health.HealthCheckRegistry;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +20,7 @@ public class MetricsTest {
 
     public static void main(String[] args) {
         MetricsTest mt = new MetricsTest();
-        mt.jmxReporterTest();
+        mt.jmxGaugeReporterTest();
     }
 
     public void getStartedTest() {
@@ -43,14 +41,18 @@ public class MetricsTest {
         startJmxReporter();
         Meter requests = metrics.meter("requests");
         requests.mark();
-        while (true) {
-            try {
-                Thread.sleep(1000);
-                System.out.println("reporting to jmx......");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        waiting();
+    }
+
+    public void jmxGaugeReporterTest() {
+        startJmxReporter();
+        metrics.register(MetricRegistry.name(MetricsTest.class, "gauge", "test"), new Gauge<Boolean>() {
+            @Override
+            public Boolean getValue() {
+                return true;
             }
-        }
+        });
+        waiting();
     }
 
     private void startReport() {
@@ -79,6 +81,17 @@ public class MetricsTest {
             Thread.sleep(sec * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void waiting() {
+        while (true) {
+            try {
+                Thread.sleep(1000);
+                System.out.println("reporting to jmx......");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
