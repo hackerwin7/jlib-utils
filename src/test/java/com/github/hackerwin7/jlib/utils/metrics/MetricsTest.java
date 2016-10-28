@@ -3,6 +3,8 @@ package com.github.hackerwin7.jlib.utils.metrics;
 import com.codahale.metrics.*;
 import com.codahale.metrics.health.HealthCheckRegistry;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,7 +22,7 @@ public class MetricsTest {
 
     public static void main(String[] args) {
         MetricsTest mt = new MetricsTest();
-        mt.jmxGaugeReporterTest();
+        mt.jmxGaugeReporterTest1();
     }
 
     public void getStartedTest() {
@@ -50,6 +52,20 @@ public class MetricsTest {
             @Override
             public Boolean getValue() {
                 return true;
+            }
+        });
+        waiting();
+    }
+
+    public void jmxGaugeReporterTest1() {
+        startJmxReporter();
+        metrics.register(MetricRegistry.name(MetricsTest.class, "gauge", "test"), new Gauge<HashMap<String, Object>>() {
+            @Override
+            public HashMap<String, Object> getValue() {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("status", true);
+                map.put("cake", "chocolate");
+                return (HashMap<String, Object>) map;
             }
         });
         waiting();

@@ -7,6 +7,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
+import java.util.HashMap;
+
 /**
  * Created by IntelliJ IDEA.
  * User: hackerwin7
@@ -18,7 +20,7 @@ import java.io.IOException;
 public class JMXTest {
     public static void main(String[] args) {
         JMXTest jt = new JMXTest();
-        jt.JMXClientGaugeTest();
+        jt.JMXClientGaugeTest1();
     }
 
     public void readTest() {
@@ -50,5 +52,11 @@ public class JMXTest {
         JMXClient jmx = new JMXClient(null, 9999);
         Boolean health = (Boolean) jmx.getAttribute("metrics:name=com.github.hackerwin7.jlib.utils.metrics.MetricsTest.gauge.test", "Value");
         System.out.println(health);
+    }
+
+    public void JMXClientGaugeTest1() {
+        JMXClient jmx = new JMXClient(null, 9999);
+        HashMap map = (HashMap) jmx.getAttribute("metrics:name=com.github.hackerwin7.jlib.utils.metrics.MetricsTest.gauge.test", "Value");
+        System.out.println(map);
     }
 }
