@@ -135,7 +135,10 @@
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/assembly/assembly-magpie.xml</descriptor>
+                        <descriptor>src/main/assembly/assembly-bin.xml</descriptor>
                     </descriptors>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <finalName>jlib-${version}</finalName>
                 </configuration>
             </plugin>
             <plugin>
@@ -191,7 +194,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <skip>false</skip>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

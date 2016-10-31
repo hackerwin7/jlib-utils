@@ -44,6 +44,14 @@ public class ShellUtilsProc {
         return runProcSync(cmd, stdout, stderr, null, null, false);
     }
 
+    public static int runProcSync(List<String> cmd, StringBuilder stdout, StringBuilder stderr, File workingDir) {
+        return runProcSync(cmd.toArray(new String[cmd.size()]), stdout, stderr, workingDir);
+    }
+
+    public static int runProcSync(String[] cmd, StringBuilder stdout, StringBuilder stderr, File workingDir) {
+        return runProcSync(cmd, stdout, stderr, workingDir, null, false);
+    }
+
     public static int runProcSync(List<String> cmd, StringBuilder stdout, StringBuilder stderr,
                                   File workingDir, Map<String, String> envi, boolean isInheritIO) {
         return runProcSync(cmd.toArray(new String[cmd.size()]), stdout, stderr, workingDir, envi, isInheritIO);
@@ -64,6 +72,7 @@ public class ShellUtilsProc {
 
     /**
      * start a ProcessBuilder to start the command and get the stdout and stderr
+     * it returns until the command complete or process exit
      * @param cmd
      * @param stdout
      * @param stderr
@@ -149,6 +158,7 @@ public class ShellUtilsProc {
 
     /**
      * run async process with ProcessBuilder
+     * it return the process immediately without waiting the process exit or command complete
      * @param cmd
      * @param workingDir
      * @param envi

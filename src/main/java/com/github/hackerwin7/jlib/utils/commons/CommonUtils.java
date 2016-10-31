@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -124,5 +125,15 @@ public class CommonUtils {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * get the process itself own process id
+     * @return pid
+     */
+    public static long getPid() {
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        String nameArr[] = StringUtils.split(name, "@");
+        return Long.parseLong(nameArr[0]);
     }
 }
