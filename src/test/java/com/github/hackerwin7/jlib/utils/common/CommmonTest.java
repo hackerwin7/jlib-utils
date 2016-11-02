@@ -12,6 +12,11 @@ import com.github.hackerwin7.jlib.utils.commons.CommonUtils;
  */
 public class CommmonTest {
     public static void main(String[] args) {
+        CommmonTest ct = new CommmonTest();
+        ct.test1();
+    }
+
+    public void test() {
         while (true) {
 
             System.out.println(CommonUtils.getPid());
@@ -22,5 +27,9 @@ public class CommmonTest {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void test1() {
+        System.out.println(System.getProperty("user.dir"));
     }
 }

@@ -17,6 +17,7 @@
     </containerDescriptorHandlers>
     <fileSets>
         <fileSet>
+            <!--local classes-->
             <directory>${project.basedir}/target/classes/</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
@@ -30,6 +31,7 @@
             </includes>
         </fileSet>
         <fileSet>
+            <!--extension file such as config file etc. -->
             <directory>${project.basedir}/src/main/resources</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
@@ -40,6 +42,7 @@
         </fileSet>
     </fileSets>
     <dependencySets>
+        <!--dependency classes-->
         <dependencySet>
             <outputDirectory>/</outputDirectory>
             <useProjectArtifact>false</useProjectArtifact>

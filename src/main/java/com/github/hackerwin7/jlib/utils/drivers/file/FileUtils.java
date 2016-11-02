@@ -4,9 +4,7 @@ import com.github.hackerwin7.jlib.utils.executors.TrainBdpConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.ho.yaml.Yaml;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -95,5 +93,14 @@ public class FileUtils {
     public static String readYaml(String fileName, String key) throws Exception {
         HashMap map = Yaml.loadType(FileUtils.class.getClassLoader().getResource(fileName).openStream(), HashMap.class);
         return map.get(key).toString();
+    }
+
+    /**
+     * delete recursively if file is directory
+     * @param file
+     * @throws IOException
+     */
+    public static void delete(File file) throws IOException {
+        org.apache.commons.io.FileUtils.deleteDirectory(file);
     }
 }
