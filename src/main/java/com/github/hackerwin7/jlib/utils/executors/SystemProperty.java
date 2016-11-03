@@ -61,15 +61,22 @@ public class SystemProperty {
 //
 //        PropertyConfigurator.configure(new FileInputStream(System.getProperty("config.log4j")));
 
+        File cur = new File(System.getProperty("user.dir"));
+
         while (true) {
 
-            LOG.info("dir = " + System.getProperty("user.dir"));
+            File par = cur.getParentFile();
+            if(par == null)
+                break;
+            LOG.info(par.getPath());
 
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 LOG.error(e.getMessage(), e);
             }
+
+            cur = par;
         }
     }
 }
