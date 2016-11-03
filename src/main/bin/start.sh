@@ -14,6 +14,7 @@ esac
 base=${bin_abs_path}/..
 conf=${base}/conf/config.properties
 log4j=${base}/conf/log4j.properties
+conf_dir=$base/conf
 
 export LANG=en_US.UTF-8
 export BASE=$base
@@ -71,24 +72,19 @@ fi
 JAVA_OPTS=" $JAVA_OPTS -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dfile.encoding=UTF-8"
 CUSTOM_OPTS="-DappName=jlib -Dconfig.conf=$conf -Dconfig.log4j=$log4j"
 
-if [ -e $conf ]
-then
-    for i in $base/lib/*;
-        do CLASSPATH=$i:"$CLASSPATH";
-    done
-    for i in $base/conf/*;
-        do CLASSPATH=$i:"$CLASSPATH";
-    done
 
-    cd $bin_abs_path
+######################## starting JVM
 
-    echo conf : $conf
-    cd $base
-    $JAVA $JAVA_OPTS $JAVA_DEBUG_OPT $CUSTOM_OPTS -classpath .:$CLASSPATH com.github.hackerwin7.jlib.utils.executors.ProcessBuilderId 1>>/dev/null 2>&1 &
-    echo $! > $base/bin/process.pid
-    cd $current_path
+# add config directory into classpath not file itself
+CLASSPATH=$conf_dir
+#CLASSPATH=$log4j:$conf # error format to involve the file into classpath
 
-    echo "process started......"
-else
-    echo "conf $conf is not exists!"
-fi
+# add jar files into classpath
+for i in $base/lib/*;
+    do CLASSPATH=$i:"$CLASSPATH";
+done
+# echo classpath = $CLASSPATH
+cd $base
+$JAVA $JAVA_OPTS $JAVA_DEBUG_OPT $CUSTOM_OPTS -classpath .:$CLASSPATH com.github.hackerwin7.jlib.utils.executors.SystemProperty 1>>/dev/null 2>&1 &
+echo $! > $base/bin/process.pid
+echo "process started......"
