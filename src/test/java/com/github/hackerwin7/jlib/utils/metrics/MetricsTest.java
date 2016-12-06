@@ -12,7 +12,10 @@ import java.util.concurrent.TimeUnit;
  * User: hackerwin7
  * Date: 2016/10/25
  * Time: 4:05 PM
- * Desc: metrics lib test
+ * Desc:    metrics lib test
+ *          VM Options :    -Dcom.sun.management.jmxremote.port=9999
+ *                          -Dcom.sun.management.jmxremote.authenticate=false
+ *                          -Dcom.sun.management.jmxremote.ssl=false
  * Tips:
  */
 public class MetricsTest {
@@ -22,7 +25,7 @@ public class MetricsTest {
 
     public static void main(String[] args) {
         MetricsTest mt = new MetricsTest();
-        mt.jmxGaugeReporterTest1();
+        mt.jmxGaugeReporterTest2();
     }
 
     public void getStartedTest() {
@@ -65,6 +68,20 @@ public class MetricsTest {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("status", true);
                 map.put("cake", "chocolate");
+                return (HashMap<String, Object>) map;
+            }
+        });
+        waiting();
+    }
+
+    public void jmxGaugeReporterTest2() {
+        startJmxReporter();
+        metrics.register(MetricRegistry.name("fuck", "gauge", "test"), new Gauge<HashMap<String, Object>>() {
+            @Override
+            public HashMap<String, Object> getValue() {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("status", true);
+                map.put("cake", "fuck");
                 return (HashMap<String, Object>) map;
             }
         });

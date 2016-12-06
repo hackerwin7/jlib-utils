@@ -18,9 +18,9 @@ import java.util.HashMap;
  * Tips:
  */
 public class JMXTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         JMXTest jt = new JMXTest();
-        jt.JMXClientGaugeTest1();
+        jt.JMXClientGaugeTest2();
     }
 
     public void readTest() {
@@ -57,6 +57,12 @@ public class JMXTest {
     public void JMXClientGaugeTest1() {
         JMXClient jmx = new JMXClient(null, 9999);
         HashMap map = (HashMap) jmx.getAttribute("metrics:name=com.github.hackerwin7.jlib.utils.metrics.MetricsTest.gauge.test", "Value");
+        System.out.println(map);
+    }
+
+    public void JMXClientGaugeTest2() throws Exception {
+        JMXClient jmx = new JMXClient(null, 9999);
+        HashMap map = (HashMap) jmx.getAttribute("metrics:name=fuck.gauge.test", "Value");
         System.out.println(map);
     }
 }

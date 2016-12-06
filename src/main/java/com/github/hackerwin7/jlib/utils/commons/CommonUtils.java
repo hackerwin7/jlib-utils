@@ -3,6 +3,8 @@ package com.github.hackerwin7.jlib.utils.commons;
 import com.github.hackerwin7.jlib.utils.drivers.algorithm.md5.util.MD5;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +20,9 @@ import java.util.Random;
  * Created by fff on 10/28/15.
  */
 public class CommonUtils {
+
+    private static final Logger LOG = Logger.getLogger(CommonUtils.class);
+
     public static InputStream file2in(String filename, String prop) throws Exception {
         String cnf = System.getProperty(prop, "classpath:" + filename);
         InputStream in = null;
@@ -135,5 +140,13 @@ public class CommonUtils {
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String nameArr[] = StringUtils.split(name, "@");
         return Long.parseLong(nameArr[0]);
+    }
+
+    public static void delay(long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 }

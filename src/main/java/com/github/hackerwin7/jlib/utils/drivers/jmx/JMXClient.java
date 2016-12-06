@@ -8,6 +8,9 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -60,6 +63,33 @@ public class JMXClient {
             LOG.error(e.getMessage(), e);
             throw new JMXException(e.getMessage());
         }
+    }
+
+    /**
+     * list all the object names with the specific(port) jmx connection server
+     * @return all object names
+     */
+    public List<String> listObjectName() {
+        List<String> list = new LinkedList<>();
+        try {
+            Set mbeans = mbsc.queryNames(null, null);
+            for(Object mbean : mbeans) {
+                MBeanInfo info = mbsc.getMBeanInfo((ObjectName) mbean);
+                LOG.debug(info);
+                MBeanAttributeInfo[] attrInfo = info.getAttributes();
+                LOG.debug(attrInfo);
+                for(MBeanAttributeInfo attr : attrInfo) {
+                    list.add(attr.getName());
+                }
+            }
+        } catch (IOException
+                | InstanceNotFoundException
+                | IntrospectionException
+                | ReflectionException e) {
+            LOG.error(e.getMessage(), e);
+            throw new JMXException(e.getMessage());
+        }
+        return list;
     }
 
     /**
