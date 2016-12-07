@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.commons;
 
+import com.github.hackerwin7.jlib.utils.commons.exceptions.UncaughtException;
 import com.github.hackerwin7.jlib.utils.drivers.algorithm.md5.util.MD5;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -148,5 +149,14 @@ public class CommonUtils {
         } catch (InterruptedException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    public static void initLogger(final Logger logger) {
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                logger.error("thread name = " + t.getName() + ", error = " + e.getMessage(), e);
+            }
+        });
     }
 }
