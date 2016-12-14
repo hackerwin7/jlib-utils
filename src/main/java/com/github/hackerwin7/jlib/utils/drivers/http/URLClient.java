@@ -1,4 +1,4 @@
-package com.github.hackerwin7.jlib.utils.drivers.url;
+package com.github.hackerwin7.jlib.utils.drivers.http;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -6,7 +6,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- * according to the url, read the string
+ * according to the http, read the string
  * Created by fff on 10/28/15.
  */
 public class URLClient {
@@ -18,7 +18,7 @@ public class URLClient {
     public static final int CONN_TIME_OUT = 30 * 1000;
 
     /**
-     * construct with url
+     * construct with http
      * @param urlStr
      * @throws Exception
      */
@@ -27,7 +27,7 @@ public class URLClient {
     }
 
     /**
-     * getOrigin string data from url
+     * getOrigin string data from http
      * @return string
      * @throws Exception
      */
@@ -45,7 +45,7 @@ public class URLClient {
     }
 
     /**
-     * getOrigin string data from specified url
+     * getOrigin string data from specified http
      * @param url
      * @return string data
      * @throws Exception

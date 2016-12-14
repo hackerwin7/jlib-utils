@@ -1,4 +1,4 @@
-package com.github.hackerwin7.jlib.utils.drivers.url;
+package com.github.hackerwin7.jlib.utils.drivers.http;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;

@@ -1,6 +1,6 @@
 package com.github.hackerwin7.jlib.utils.executors;
 
-import com.github.hackerwin7.jlib.utils.drivers.url.URLClient;
+import com.github.hackerwin7.jlib.utils.drivers.http.URLClient;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;

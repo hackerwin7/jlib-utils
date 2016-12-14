@@ -1,7 +1,7 @@
 package com.github.hackerwin7.jlib.utils.executors;
 
 import com.github.hackerwin7.jlib.utils.drivers.file.FileUtils;
-import com.github.hackerwin7.jlib.utils.drivers.url.URLClient;
+import com.github.hackerwin7.jlib.utils.drivers.http.URLClient;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -131,7 +131,7 @@ public class SwitchTpConfig {
         jdata.put("synchronous", true);
         jdata.put("erp", "fff");
         String data = jdata.toString();
-        //post url
+        //post http
         String url = addr;
         HttpPost post = new HttpPost(url);
         List<NameValuePair> valuePairs = new ArrayList<>();
@@ -160,7 +160,7 @@ public class SwitchTpConfig {
         jdata.put("key", jobId);
         jdata.put("erp", "fff");
         String data = jdata.toString();
-        //post url
+        //post http
         String url = addr;
         HttpPost post = new HttpPost(url);
         List<NameValuePair> valuePairs = new ArrayList<>();
@@ -190,7 +190,7 @@ public class SwitchTpConfig {
         jdata.put("erp", "fff");
         String data = jdata.toString();
         data = URLEncoder.encode(data, enc);
-        //post url
+        //post http
         String url = addr + "?appId=" + appid + "&token=" + token + "&time=" + time + "&data=" + data;
         HttpGet request = new HttpGet(url);
         HttpResponse response = httpClient.execute(request);
@@ -209,7 +209,7 @@ public class SwitchTpConfig {
         //data
         String data = "{\"key\":\"" + jobId + "\",\"erp\":\"fanwenqi\"," + "\"model\":\"rpc\"}";
         data = URLEncoder.encode(data, enc);
-        //post url
+        //post http
         String url = addr + "?appId=" + appid + "&token=" + token + "&time=" + time + "&data=" + data;
         HttpGet request = new HttpGet(url);
         HttpResponse response = httpClient.execute(request);
@@ -236,7 +236,7 @@ public class SwitchTpConfig {
         jdata.put("key", jobId);
         jdata.put("erp", "fff");
         String data = jdata.toString();
-        //post url
+        //post http
         String url = addr;
         HttpPost post = new HttpPost(url);
         List<NameValuePair> valuePairs = new ArrayList<>();

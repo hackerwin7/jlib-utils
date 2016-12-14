@@ -2,6 +2,7 @@ package com.github.hackerwin7.jlib.utils.metrics;
 
 import com.codahale.metrics.*;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.github.hackerwin7.jlib.utils.commons.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class MetricsTest {
 
     public static void main(String[] args) {
         MetricsTest mt = new MetricsTest();
-        mt.jmxGaugeReporterTest2();
+        mt.jmxMultipleGaugeReporterTest();
     }
 
     public void getStartedTest() {
@@ -83,6 +84,56 @@ public class MetricsTest {
                 map.put("status", true);
                 map.put("cake", "fuck");
                 return (HashMap<String, Object>) map;
+            }
+        });
+        waiting();
+    }
+
+    public void jmxGaugeReporterTest3() {
+        startJmxReporter();
+        final Map<String, Object> map = new HashMap<String, Object>();
+        map.put("status", "running");
+        metrics.register(MetricRegistry.name("continue"), new Gauge<HashMap<String, Object>>() {
+            @Override
+            public HashMap<String, Object> getValue() {
+                return (HashMap<String, Object>) map;
+            }
+        });
+        CommonUtils.delay(5000);
+        map.put("status", "switching");
+        CommonUtils.delay(5000);
+        map.put("status", "started");
+
+        final Map<String, Object> map1 = new HashMap<String, Object>();
+        map1.put("kiko", "okik");
+        metrics.register(MetricRegistry.name("kiko"), new Gauge<HashMap<String, Object>>() {
+            @Override
+            public HashMap<String, Object> getValue() {
+                return (HashMap<String, Object>) map1;
+            }
+        });
+
+
+        waiting();
+    }
+
+    public void jmxMultipleGaugeReporterTest() {
+        startJmxReporter();
+        final Map<String, Object> mapStatus = new HashMap<String, Object>();
+        mapStatus.put("status", "running");
+        metrics.register(MetricRegistry.name("status"), new Gauge<HashMap<String, Object>>() {
+            @Override
+            public HashMap<String, Object> getValue() {
+                return (HashMap<String, Object>) mapStatus;
+            }
+        });
+        final Map<String, Object> mapServer = new HashMap<String, Object>();
+        mapServer.put("server", "running");
+        metrics.register(MetricRegistry.name("server"), new Gauge<HashMap<String, Object>>() {
+            @Override
+            public HashMap<String, Object> getValue() {
+                mapStatus.put("status", "server in trigger");
+                return (HashMap<String, Object>) mapServer;
             }
         });
         waiting();

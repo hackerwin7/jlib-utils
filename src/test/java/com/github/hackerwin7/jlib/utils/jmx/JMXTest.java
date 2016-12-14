@@ -1,5 +1,6 @@
 package com.github.hackerwin7.jlib.utils.jmx;
 
+import com.github.hackerwin7.jlib.utils.commons.CommonUtils;
 import com.github.hackerwin7.jlib.utils.drivers.jmx.JMXClient;
 
 import javax.management.*;
@@ -20,7 +21,7 @@ import java.util.HashMap;
 public class JMXTest {
     public static void main(String[] args) {
         JMXTest jt = new JMXTest();
-        jt.jmxTestEnv();
+        jt.jmxTestMultiple();
     }
 
     public void readTest() {
@@ -74,5 +75,37 @@ public class JMXTest {
         JMXClient jmx = new JMXClient("172.16.115.95", 9999);
         Integer val = (Integer) jmx.getAttribute("metrics:name=\"supervisor:num-slots-used-gauge\"", "Value");
         System.out.println(val);
+    }
+
+    public void jmxTestDuring() {
+        JMXClient jmx = new JMXClient(null, 9999);
+        while (true) {
+            try {
+                HashMap map = (HashMap) jmx.getAttribute("metrics:name=continue", "Value");
+                System.out.println(map);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            } finally {
+                CommonUtils.delay(1000);
+            }
+        }
+    }
+
+    public void jmxTestMultiple() {
+        JMXClient jmx = new JMXClient(null, 9999);
+        int times = 1;
+        while (times <= 10) {
+            try {
+                HashMap map = (HashMap) jmx.getAttribute("metrics:name=status", "Value");
+                System.out.println(map);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            } finally {
+                CommonUtils.delay(1000);
+            }
+            times++;
+        }
+        System.out.println("get the server metrics: " + jmx.getAttribute("metrics:name=server", "Value"));
+        System.out.println("get the status metrics once again: " + jmx.getAttribute("metrics:name=status", "Value"));
     }
 }
