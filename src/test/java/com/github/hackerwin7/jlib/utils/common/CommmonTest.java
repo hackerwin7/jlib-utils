@@ -1,9 +1,11 @@
 package com.github.hackerwin7.jlib.utils.common;
 
 import com.github.hackerwin7.jlib.utils.commons.CommonUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,7 +18,7 @@ import java.util.Map;
 public class CommmonTest {
     public static void main(String[] args) {
         CommmonTest ct = new CommmonTest();
-        ct.mapCompTest();
+        ct.test3();
     }
 
     public void test() {
@@ -46,5 +48,35 @@ public class CommmonTest {
         m2.put("dd", false);
 
         System.out.println(m1.equals(m2));
+    }
+
+    public void test2() {
+        Long valL = 1L;
+        Integer valI = 1;
+        Object valLO = (Object) valL;
+        Object valIO = (Object) valI;
+        System.out.println(valLO.getClass());
+        System.out.println(valIO.getClass());
+    }
+
+    public void test3() {
+        Long valL = 1L;
+        Integer valI = 1;
+        Object valLO = (Object) valL;
+        Object valIO = (Object) valI;
+        System.out.println(Objects.equals(valLO, valIO));
+        try {
+//            System.out.println(Objects.equals(valLO, Class.forName(valLO.getClass().getName()).cast(valIO)));
+//            System.out.println(Objects.equals(Class.forName(valIO.getClass().getName()).cast(valLO), valIO));
+            System.out.println(StringUtils.equals( Objects.toString(valLO) , Objects.toString(valIO)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        CommmonTest ct1 = new CommmonTest();
+        CommmonTest ct2 = new CommmonTest();
+        System.out.println(Objects.toString(ct1));
+        System.out.println(Objects.toString(ct2));
     }
 }
