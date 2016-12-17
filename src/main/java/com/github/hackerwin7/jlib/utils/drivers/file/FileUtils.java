@@ -1,6 +1,13 @@
 package com.github.hackerwin7.jlib.utils.drivers.file;
 
 import com.github.hackerwin7.jlib.utils.executors.TrainBdpConfig;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
+import org.apache.commons.exec.OS;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
@@ -21,7 +28,11 @@ import java.util.List;
  */
 public class FileUtils {
 
+    /* logger */
     private static final Logger LOG = Logger.getLogger(FileUtils.class);
+
+    /* constants */
+    public static final int MBYTES = 1024 * 1024;
 
     /**
      * load resource or classpath file name and convert into list
@@ -190,5 +201,110 @@ public class FileUtils {
         if (dest != null)
             unArchiver.setDestFile(dest);
         unArchiver.extract();
+    }
+
+    /**
+     * un tar gz the archive file using apache-common-compress
+     * inspired by: event-store-maven-plugin EventStoreDownloadMojo.java
+     * @param archive
+     * @param destDir
+     */
+    public static void unTarGz(File archive, File destDir) {
+        try {
+            /* pre-check */
+            if(!destDir.exists())
+                if(!destDir.mkdirs())
+                    throw new IOException("mkdirs failed to make the dir for dest = " + destDir.getAbsolutePath());
+            TarArchiveInputStream tarIn = new TarArchiveInputStream(
+                    new GzipCompressorInputStream(
+                            new BufferedInputStream(
+                                    new FileInputStream(archive)
+                            )
+                    )
+            );
+            TarArchiveEntry entry;
+            while ((entry = tarIn.getNextTarEntry()) != null) {
+                LOG.debug("Extracting: " + entry.getName());
+                File file = new File(destDir, entry.getName());
+                if(entry.isDirectory()) {
+                    if (!file.exists())
+                        if (!file.mkdirs())
+                            throw new IOException("mkdirs failed, when make the sub dir = " + file.getAbsolutePath());
+                } else {
+                    if(!file.getParentFile().exists())
+                        file.getParentFile().mkdirs(); // create parent dirs
+                    int count = 0;
+                    byte[] read = new byte[MBYTES];
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), MBYTES);
+                    while ((count = tarIn.read(read, 0, MBYTES)) != -1) {
+                        bos.write(read, 0, count);
+                    }
+                    bos.close();
+                    entry.getMode();
+                }
+                applyFileMode(file, new FileMode(entry.getMode()));
+            }
+            tarIn.close();
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * apply file mode, inspired by RapidEnv Unpacker.java
+     * @param file
+     * @param fileMode
+     * @throws IOException
+     */
+    private static void applyFileMode(final File file, final FileMode fileMode) throws IOException {
+        if (OS.isFamilyUnix() || OS.isFamilyMac()) {
+            final String smode = fileMode.toChmodStringFull();
+            final CommandLine cmdLine = new CommandLine("chmod");
+            cmdLine.addArgument(smode);
+            cmdLine.addArgument(file.getAbsolutePath());
+            final Executor executor = new DefaultExecutor();
+            try {
+                final int result = executor.execute(cmdLine);
+                if (result != 0) {
+                    throw new IOException("Error # " + result
+                            + " while trying to set mode \"" + smode
+                            + "\" for file: " + file.getAbsolutePath());
+                }
+            } catch (final IOException ex) {
+                throw new IOException (
+                        "Error while trying to set mode \"" + smode
+                                + "\" for file: " + file.getAbsolutePath(), ex);
+            }
+        } else {
+            file.setReadable(fileMode.isUr() || fileMode.isGr()
+                    || fileMode.isOr());
+            file.setWritable(fileMode.isUw() || fileMode.isGw()
+                    || fileMode.isOw());
+            file.setExecutable(fileMode.isUx() || fileMode.isGx()
+                    || fileMode.isOx());
+        }
+    }
+
+    /**
+     * unarchive the archive file into dest dir and change the base name into the specific {@code name}
+     * @param archive
+     * @param destDir
+     * @param name
+     */
+    public static void unTarGz(File archive, File destDir, String name) {
+        if(!archive.exists())
+            return;
+        if(!destDir.exists())
+            destDir.mkdirs();
+        File tmp = new File(destDir, archive.getName() + "_tmp_" + System.currentTimeMillis());
+        if(tmp.exists())
+            tmp.delete();
+        else
+            tmp.mkdirs();
+        unTarGz(archive, tmp);
+        File tmpDest = tmp.listFiles()[0];
+        tmpDest.renameTo(new File(destDir, name)); // mv out of tmp dir
+        if(tmp.exists())
+            tmp.delete();
     }
 }

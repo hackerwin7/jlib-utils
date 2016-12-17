@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 public class FileTest {
     public static void main(String[] args) {
         FileTest ft = new FileTest();
-        ft.test3();
+        ft.test4();
     }
 
     public void test1() {
@@ -43,5 +43,10 @@ public class FileTest {
 
     public void test3() {
         FileUtils.unTarGzPlexus(new File("/home/fff/Projects/mars/mars-dist/mars-admin-bin/target/mars-admin-1.0-SNAPSHOT.tar.gz"), new File("/home/fff/Servers"));
+    }
+
+    public void test4() {
+//        FileUtils.unTarGz(new File("/home/fff/Projects/mars/mars-dist/mars-admin-bin/target/mars-admin-1.0-SNAPSHOT.tar.gz"), new File("/home/fff/Servers"));
+        FileUtils.unTarGz(new File("/home/fff/Projects/mars/mars-dist/mars-admin-bin/target/mars-admin-1.0-SNAPSHOT.tar.gz"), new File("/home/fff/Servers"), "mars_mars");
     }
 }
