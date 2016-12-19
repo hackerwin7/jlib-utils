@@ -223,8 +223,8 @@ public class FileUtils {
                     )
             );
             TarArchiveEntry entry;
-            while ((entry = tarIn.getNextTarEntry()) != null) {
-                LOG.debug("Extracting: " + entry.getName());
+            while ((entry = (TarArchiveEntry) tarIn.getNextEntry()) != null) {
+                LOG.info("Extracting: " + entry.getName());
                 File file = new File(destDir, entry.getName());
                 if(entry.isDirectory()) {
                     if (!file.exists())

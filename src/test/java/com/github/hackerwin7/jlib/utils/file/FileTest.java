@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 public class FileTest {
     public static void main(String[] args) {
         FileTest ft = new FileTest();
-        ft.test4();
+        ft.test6();
     }
 
     public void test1() {
@@ -46,7 +46,17 @@ public class FileTest {
     }
 
     public void test4() {
-//        FileUtils.unTarGz(new File("/home/fff/Projects/mars/mars-dist/mars-admin-bin/target/mars-admin-1.0-SNAPSHOT.tar.gz"), new File("/home/fff/Servers"));
-        FileUtils.unTarGz(new File("/home/fff/Projects/mars/mars-dist/mars-admin-bin/target/mars-admin-1.0-SNAPSHOT.tar.gz"), new File("/home/fff/Servers"), "mars_mars");
+        FileUtils.unTarGz(new File("/home/fff/Projects/mars/mars-dist/mars-admin-bin/target/mars-admin-1.0-SNAPSHOT.tar.gz"), new File("/home/fff/Servers"));
+//        FileUtils.unTarGz(new File("/home/fff/Projects/mars/mars-dist/mars-admin-bin/target/mars-admin-1.0-SNAPSHOT.tar.gz"), new File("/home/fff/Servers"), "mars_mars");
+    }
+
+    public void test5() {
+        System.out.println(Files.isSymbolicLink(Paths.get("/home/fff/Servers/mars")));
+        System.out.println(Files.isSymbolicLink(Paths.get("/home/fff/Servers/mars-1.0-SNAPSHOT")));
+        System.out.println(Files.isSymbolicLink(Paths.get("/home/fff/Servers/mars-1.0-SNAPSHOTsssss")));
+    }
+
+    public void test6() {
+        System.out.println(System.getenv());
     }
 }
