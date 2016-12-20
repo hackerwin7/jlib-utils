@@ -37,9 +37,9 @@ public class HttpTest {
             String call = HttpUtils.get("http://localhost:8080/servlet-maven-test/config?id=call");
             JSONObject jcall = JSONObject.fromObject(call);
             System.out.println("get = " + jcall);
-            jcall.put("id", "version");
+            jcall.put("id", "version.properties");
             jcall.put("group", "sayi");
-            jcall.getJSONObject("data").put("name", "version");
+            jcall.getJSONObject("data").put("name", "version.properties");
             jcall.getJSONObject("data").put("age", 67);
             jcall.getJSONObject("data").put("email", "tomcat@qq.com");
 

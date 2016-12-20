@@ -32,7 +32,8 @@
             <directory>./src/main/resources</directory>
             <outputDirectory>/conf</outputDirectory>
             <includes>
-                <include>**/*</include>
+                <include>log4j.properties</include>
+                <include>config.properties</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -43,6 +44,18 @@
             </excludes>
         </fileSet>
     </fileSets>
+    <files>
+        <file>
+            <source>src/main/resources/version</source>
+            <outputDirectory>/conf</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>src/main/resources/version.properties</source>
+            <outputDirectory>/conf</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+    </files>
     <dependencySets>
         <dependencySet>
             <outputDirectory>lib</outputDirectory>
