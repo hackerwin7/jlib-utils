@@ -18,7 +18,7 @@ import java.util.Objects;
 public class CommmonTest {
     public static void main(String[] args) {
         CommmonTest ct = new CommmonTest();
-        ct.test3();
+        ct.test4();
     }
 
     public void test() {
@@ -78,5 +78,13 @@ public class CommmonTest {
         CommmonTest ct2 = new CommmonTest();
         System.out.println(Objects.toString(ct1));
         System.out.println(Objects.toString(ct2));
+    }
+
+    public boolean retBool() {
+        return true && (false && true);
+    }
+
+    public void test4() {
+        System.out.println(retBool());
     }
 }
