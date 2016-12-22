@@ -10,13 +10,17 @@ package com.github.hackerwin7.jlib.utils.inherit;
  */
 public abstract class Supervisor {
 
-    public final int value;
-    protected final String code;
+//    public final int value;
+//    protected final String code;
 
-    public Supervisor() {
-        value = 0;
-        code = "ddd";
-        System.out.println(name());
+//    public Supervisor() {
+//        value = 0;
+//        code = "ddd";
+//        System.out.println(name());
+//    }
+
+    public Supervisor(String ss, int and) {
+        System.out.println(ss + " " + and);
     }
 
     private String name(String name) {

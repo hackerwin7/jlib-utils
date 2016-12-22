@@ -9,8 +9,12 @@ package com.github.hackerwin7.jlib.utils.inherit;
  * Tips:
  */
 public class CocoSupervisor extends Supervisor {
-    public CocoSupervisor() {
-        super();
+//    public CocoSupervisor() {
+//        super();
+//    }
+
+    public CocoSupervisor(String ss, int and) {
+        super(ss, and);
     }
 
     public String name() {
