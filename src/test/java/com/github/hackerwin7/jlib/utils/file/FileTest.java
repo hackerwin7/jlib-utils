@@ -4,6 +4,7 @@ import com.github.hackerwin7.jlib.utils.drivers.file.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -18,7 +19,7 @@ import java.nio.file.Paths;
 public class FileTest {
     public static void main(String[] args) {
         FileTest ft = new FileTest();
-        ft.test6();
+        ft.test8();
     }
 
     public void test1() {
@@ -58,5 +59,39 @@ public class FileTest {
 
     public void test6() {
         System.out.println(System.getenv());
+    }
+
+    public void test7() {
+        try {
+            org.apache.commons.io.FileUtils.copyURLToFile(new URL("http://localhost:8080/jars/mars-core-1.0-SNAPSHOT.jar"),
+                    new File("/home/fff/Servers/mars" + "/lib/" + "mars-core-1.0-SNAPSHOT.jar"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void test8() {
+        File file1 = new File("/home/fff/Servers");
+        File file2 = new File("/home/fff/Servers/mars");
+        File file3 = new File("/home/fff/Servers/mars-1.0-SNAPSHOT");
+        File file4 = new File("/home/fff/Servers/dfaefa");
+        File file5 = new File("/home/fff/Tmp/kk1");
+
+        try {
+            System.out.println(file1.getAbsolutePath() + ", " + file1.getCanonicalPath());
+            System.out.println(file2.getAbsolutePath() + ", " + file2.getCanonicalPath());
+            System.out.println(file3.getAbsolutePath() + ", " + file3.getCanonicalPath());
+            System.out.println(file4.getAbsolutePath() + ", " + file4.getCanonicalPath());
+            System.out.println(file5.getAbsolutePath() + ", " + file5.getCanonicalPath());
+
+            if(!file5.exists())
+                file5.mkdirs();
+            System.out.println(file5.getAbsolutePath() + ", " + file5.getCanonicalPath() + ", " + file5.getName() + ", " + file5.exists());
+            file5.renameTo(new File("/home/fff/Tmp/kk1r"));
+            System.out.println(file5.getAbsolutePath() + ", " + file5.getCanonicalPath() + ", " + file5.getName() + ", " + file5.exists());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

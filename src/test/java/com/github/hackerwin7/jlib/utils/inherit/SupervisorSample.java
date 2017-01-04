@@ -10,6 +10,6 @@ package com.github.hackerwin7.jlib.utils.inherit;
  */
 public class SupervisorSample {
     public static void main(String[] args) {
-        CocoSupervisor cocoSupervisor = new CocoSupervisor();
+//        CocoSupervisor cocoSupervisor = new CocoSupervisor();
     }
 }
