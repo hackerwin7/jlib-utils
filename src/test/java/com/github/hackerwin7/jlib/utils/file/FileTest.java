@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 public class FileTest {
     public static void main(String[] args) {
         FileTest ft = new FileTest();
-        ft.test8();
+        ft.test10();
     }
 
     public void test1() {
@@ -93,5 +93,28 @@ public class FileTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void test9() {
+        File file = new File("/home/fff/Servers/mars-admin");
+        System.out.println(file.getAbsoluteFile().getName());
+        try {
+            System.out.println(file.getCanonicalFile().getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void test10() {
+//        File file1 = new File("/home/fff/Servers/doctor-1.0-SNAPSHOT/target");
+//        File file2 = new File("/home/fff/Servers/doctor-1.0-SNAPSHOT/conf");
+//        org.apache.commons.io.FileUtils.deleteQuietly(file1);
+//        try {
+//            Files.delete(file2.toPath());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        File file = new File("/home/fff/Servers/doctor");
+        file.delete();
     }
 }
