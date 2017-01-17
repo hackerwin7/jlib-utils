@@ -3,6 +3,7 @@ package com.github.hackerwin7.jlib.utils.commons;
 import com.github.hackerwin7.jlib.utils.commons.exceptions.UncaughtException;
 import com.github.hackerwin7.jlib.utils.drivers.algorithm.md5.util.MD5;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.IllegalClassException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.log4j.Logger;
@@ -158,5 +159,25 @@ public class CommonUtils {
                 logger.error("thread name = " + t.getName() + ", error = " + e.getMessage(), e);
             }
         });
+    }
+
+    public static Object newInstanceOb(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return Class.forName(className).newInstance();
+    }
+
+    public static <T> T newInstance(String klass) {
+        try {
+            return newInstance((Class<T>) Class.forName(klass));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T newInstance(Class<T> klass) {
+        try {
+            return klass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

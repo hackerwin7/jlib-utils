@@ -18,7 +18,7 @@ import java.util.Objects;
 public class CommmonTest {
     public static void main(String[] args) {
         CommmonTest ct = new CommmonTest();
-        ct.test4();
+        ct.test5();
     }
 
     public void test() {
@@ -86,5 +86,14 @@ public class CommmonTest {
 
     public void test4() {
         System.out.println(retBool());
+    }
+
+    public void test5() {
+        try {
+            CommmonTest ct = (CommmonTest) CommonUtils.newInstanceOb("com.github.hackerwin7.jlib.utils.common.CommmonTest");
+            System.out.println(ct.retBool());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
